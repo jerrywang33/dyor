@@ -1,0 +1,470 @@
+const samples = [
+  {
+    id: "aster",
+    label: "ASTER",
+    chain: "BNB Chain / multi-chain",
+    title: "Aster",
+    risk: 61,
+    verdict: "Review before sizing",
+    metrics: {
+      liquidity: "Depth concentrated",
+      holders: "Top wallets elevated",
+      unlocks: "Schedule watch",
+      social: "Narrative accelerating",
+      source: "Mixed public signals",
+    },
+    findings: [
+      ["mid", "Liquidity is active, but the strongest venues are concentrated around a few routing paths."],
+      ["high", "Narrative velocity is high enough to make entries sensitive to headline reversals."],
+      ["mid", "Team and ecosystem references should be cross-checked against official docs before assuming affiliation."],
+      ["low", "There is enough public market structure to build a watchlist rather than rely on social posts."],
+    ],
+  },
+  {
+    id: "cloud",
+    label: "CLOUD",
+    chain: "Solana",
+    title: "Cloud",
+    risk: 44,
+    verdict: "Watch liquidity",
+    metrics: {
+      liquidity: "DEX depth uneven",
+      holders: "Moderate spread",
+      unlocks: "No local data",
+      social: "Steady mentions",
+      source: "Needs source review",
+    },
+    findings: [
+      ["mid", "The first pass should verify contract address, official links, and token distribution."],
+      ["mid", "Pool depth needs live monitoring because small withdrawals can change execution quality."],
+      ["low", "Social activity looks researchable, but sentiment is not a substitute for tokenomics."],
+      ["low", "No immediate critical flag in the prototype profile."],
+    ],
+  },
+  {
+    id: "0x",
+    label: "0x742d...44e",
+    chain: "Ethereum",
+    title: "Contract Scan",
+    risk: 78,
+    verdict: "High-risk until verified",
+    metrics: {
+      liquidity: "Unknown route",
+      holders: "Unverified",
+      unlocks: "Unknown",
+      social: "No canonical match",
+      source: "Contract-first scan",
+    },
+    findings: [
+      ["high", "Contract address lacks a verified project identity in this prototype run."],
+      ["high", "Unknown holder concentration should block any automated action."],
+      ["mid", "Require explorer verification, official website match, and pair creation history."],
+      ["mid", "Treat social links as untrusted until linked from the project's canonical domain."],
+    ],
+  },
+];
+
+const defaultScan = samples[0];
+
+const state = {
+  active: defaultScan,
+  query: defaultScan.label,
+  route: window.location.pathname,
+};
+
+const app = document.querySelector("#app");
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function riskTone(score) {
+  if (score >= 70) return "high";
+  if (score >= 45) return "mid";
+  return "low";
+}
+
+function toneColor(tone) {
+  return {
+    high: "var(--red)",
+    mid: "var(--yellow)",
+    low: "var(--green)",
+  }[tone];
+}
+
+function normalizeQuery(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function scanFor(value) {
+  const query = normalizeQuery(value);
+  if (!query) return state.active;
+  if (query.startsWith("0x")) return samples[2];
+  return (
+    samples.find((sample) => {
+      const label = sample.label.toLowerCase();
+      const title = sample.title.toLowerCase();
+      return label.includes(query) || title.includes(query) || query.includes(label);
+    }) || {
+      id: query.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "scan",
+      label: value.toUpperCase(),
+      chain: "Unknown chain",
+      title: value,
+      risk: 67,
+      verdict: "Needs source verification",
+      metrics: {
+        liquidity: "Unknown",
+        holders: "Unknown",
+        unlocks: "Unknown",
+        social: "Unmatched",
+        source: "Manual review",
+      },
+      findings: [
+        ["high", "No trusted project identity has been matched yet."],
+        ["mid", "Run contract, pool, holder, unlock, and social checks before making assumptions."],
+        ["mid", "Require canonical links from the project website and official social accounts."],
+        ["low", "Add it to watch mode once the primary contract is verified."],
+      ],
+    }
+  );
+}
+
+function navigate(path) {
+  window.history.pushState({}, "", path);
+  state.route = path;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function header() {
+  return `
+    <header class="topbar">
+      <a class="brand" href="/" data-link aria-label="DYOR.sh home">
+        <span class="brand-mark" aria-hidden="true">$_</span>
+        <span>
+          <strong>dyor.sh</strong>
+          <small>research shell</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/docs" data-link>Docs</a>
+        <a class="nav-icon" href="https://github.com/jerrywang33/dyor.sh" target="_blank" rel="noreferrer" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.1c-3.34.73-4.04-1.41-4.04-1.41-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.93c1.02.01 2.04.14 3 .41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/>
+          </svg>
+        </a>
+        <a class="nav-icon nav-x" href="https://x.com/jerrydev90" target="_blank" rel="noreferrer" aria-label="Built by Jerry on X">
+          <span aria-hidden="true">X</span>
+        </a>
+      </nav>
+    </header>
+  `;
+}
+
+function footer() {
+  return `
+    <footer class="footer">
+      <span>AI research shell for token due diligence. Not financial advice.</span>
+      <a href="/docs" data-link>Methodology</a>
+    </footer>
+  `;
+}
+
+function consoleLines(scan) {
+  const key = escapeHtml(scan.label);
+  return [
+    `<p><em>$</em> <b>dyor</b> scan <i>${key}</i></p>`,
+    `<p><em>></em> resolving project identity: ${escapeHtml(scan.title)}</p>`,
+    `<p><em>></em> chain context: ${escapeHtml(scan.chain)}</p>`,
+    `<p><em>></em> checking pools, holders, unlocks, social velocity</p>`,
+    `<p><em>></em> mapping risk factors to evidence buckets</p>`,
+    `<p><em>></em> verdict: <i>${escapeHtml(scan.verdict)}</i></p>`,
+    `<p><em>></em> report: /r/${escapeHtml(scan.id)}</p>`,
+  ].join("");
+}
+
+function metricRows(scan) {
+  return Object.entries(scan.metrics)
+    .map(
+      ([label, value]) => `
+        <div class="metric">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function scanPanel() {
+  const scan = state.active;
+  const tone = riskTone(scan.risk);
+  return `
+    <div class="terminal">
+      <div class="terminal-top">
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <small>dyor.sh agent console</small>
+      </div>
+      <form class="scan-shell" data-scan-form>
+        <label>
+          <span class="prompt">$</span>
+          <input
+            name="query"
+            value="${escapeHtml(state.query)}"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Token, contract, or project"
+          />
+        </label>
+        <button class="primary-btn" type="submit">Scan</button>
+      </form>
+      <div class="sample-row">
+        ${samples
+          .map((sample) => `<button class="chip" type="button" data-sample="${sample.label}">${sample.label}</button>`)
+          .join("")}
+      </div>
+      <div class="report-grid">
+        <div class="console" aria-live="polite">${consoleLines(scan)}</div>
+        <aside class="risk-panel">
+          <div class="risk-head">
+            <div>
+              <span>Risk Score</span>
+              <strong>${escapeHtml(scan.verdict)}</strong>
+            </div>
+            <div class="score ${tone}" style="--score: ${scan.risk}">
+              <span>${scan.risk}</span>
+            </div>
+          </div>
+          <div class="metric-list">${metricRows(scan)}</div>
+          <button class="ghost-btn" type="button" data-open-report="/r/${escapeHtml(scan.id)}">Open report</button>
+        </aside>
+      </div>
+    </div>
+  `;
+}
+
+function home() {
+  return `
+    <div class="home">
+      <section class="hero">
+        <h1 class="wordmark">dyor.sh</h1>
+        <div class="hero-copy">
+          <h1>
+            Your AI research shell for <span>crypto risk, evidence, and signals.</span>
+          </h1>
+          <p>
+            Type a token, contract, project, or social link. The agent turns fragmented market data into a structured research brief.
+          </p>
+        </div>
+        ${scanPanel()}
+      </section>
+
+      <div class="sections">
+        <section class="split">
+          <div>
+            <span class="kicker">Agent Workflow</span>
+            <h2>From noisy token links to a defensible research path.</h2>
+            <p>
+              DYOR.sh is designed as a research agent, not a trading signal. It keeps the workflow evidence-first and makes uncertainty visible.
+            </p>
+          </div>
+          <div class="flow">
+            <article class="flow-step">
+              <span class="flow-index">01</span>
+              <div>
+                <strong>Resolve identity</strong>
+                <span>Match ticker, contract, chain, website, and official social accounts before analysis.</span>
+              </div>
+            </article>
+            <article class="flow-step">
+              <span class="flow-index">02</span>
+              <div>
+                <strong>Check risk surfaces</strong>
+                <span>Review holders, pool depth, unlocks, market structure, dev activity, and narrative velocity.</span>
+              </div>
+            </article>
+            <article class="flow-step">
+              <span class="flow-index">03</span>
+              <div>
+                <strong>Generate report</strong>
+                <span>Return a brief with red flags, confidence, links, and watch triggers.</span>
+              </div>
+            </article>
+            <article class="flow-step">
+              <span class="flow-index">04</span>
+              <div>
+                <strong>Watch changes</strong>
+                <span>Track liquidity moves, whale transfers, CEX notices, unlock windows, and social anomalies.</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="split">
+          <div>
+            <span class="kicker">Signal Map</span>
+            <h2>Built for Alpha tokens, long-tail tokens, and fast-moving narratives.</h2>
+            <p>
+              The first public build is a frontend prototype. The product direction is an independent agent layer for every chain and every token.
+            </p>
+          </div>
+          <div class="signal-grid">
+            <article class="signal">
+              <strong>Liquidity</strong>
+              <span>Pool depth, withdrawals, slippage paths, venue concentration, and routing quality.</span>
+            </article>
+            <article class="signal">
+              <strong>Supply</strong>
+              <span>Unlock schedules, top holder concentration, treasury wallets, and suspicious transfers.</span>
+            </article>
+            <article class="signal">
+              <strong>Source</strong>
+              <span>Team links, docs, GitHub, audits, canonical domains, and contract verification.</span>
+            </article>
+            <article class="signal">
+              <strong>Attention</strong>
+              <span>Social velocity, KOL clustering, announcement deltas, and hype-to-data mismatch.</span>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function reportPage(id) {
+  const scan = samples.find((sample) => sample.id === id) || state.active;
+  const tone = riskTone(scan.risk);
+  return `
+    <section class="report-page">
+      <a class="ghost-btn" href="/" data-link>Back to shell</a>
+      <div class="report-card">
+        <div class="report-card-head">
+          <span class="kicker">Shareable DYOR Report</span>
+          <h1>${escapeHtml(scan.title)}</h1>
+          <p>${escapeHtml(scan.chain)} · Risk score ${scan.risk} · ${escapeHtml(scan.verdict)}</p>
+        </div>
+        <div class="report-card-body">
+          <div class="risk-head">
+            <div>
+              <span>Risk posture</span>
+              <strong>${escapeHtml(scan.verdict)}</strong>
+            </div>
+            <div class="score ${tone}" style="--score: ${scan.risk}">
+              <span>${scan.risk}</span>
+            </div>
+          </div>
+          <div class="metric-list">${metricRows(scan)}</div>
+          <h2>Findings</h2>
+          <div class="finding-list">
+            ${scan.findings
+              .map(
+                ([itemTone, text]) => `
+                  <div class="finding" style="--tone: ${toneColor(itemTone)}">${escapeHtml(text)}</div>
+                `
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function docsPage() {
+  return `
+    <section class="docs">
+      <h1>DYOR.sh Docs</h1>
+      <p>
+        DYOR.sh is an AI research shell. The goal is to scan crypto assets, surface evidence, explain risk, and keep a watch process running after the first report.
+      </p>
+      <div class="doc-card">
+        <h2>Commands</h2>
+        <div class="flow">
+          <article class="flow-step"><code>/scan</code><span>Run token, contract, or project research.</span></article>
+          <article class="flow-step"><code>/redflags</code><span>List unresolved risks and what would reduce them.</span></article>
+          <article class="flow-step"><code>/watch</code><span>Track liquidity, unlock, wallet, social, and announcement changes.</span></article>
+          <article class="flow-step"><code>/compare</code><span>Compare two projects by market, supply, usage, and source quality.</span></article>
+        </div>
+      </div>
+      <div class="doc-card">
+        <h2>Method</h2>
+        <div>
+          <p>
+            The agent separates facts, inferences, and missing data. Reports should link back to primary sources when live data connectors are added.
+          </p>
+          <p>
+            DYOR.sh does not provide financial advice, price targets, or buy/sell calls.
+          </p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function render() {
+  const path = window.location.pathname;
+  state.route = path;
+  let view = home();
+
+  if (path.startsWith("/r/")) {
+    view = reportPage(path.split("/").filter(Boolean)[1]);
+  }
+
+  if (path === "/docs") {
+    view = docsPage();
+  }
+
+  app.innerHTML = `
+    <div class="shell">
+      ${header()}
+      <main class="main">${view}</main>
+      ${footer()}
+    </div>
+  `;
+}
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-link]");
+  if (link) {
+    const href = link.getAttribute("href");
+    if (href?.startsWith("/")) {
+      event.preventDefault();
+      navigate(href);
+    }
+  }
+
+  const sample = event.target.closest("[data-sample]");
+  if (sample) {
+    state.query = sample.dataset.sample;
+    state.active = scanFor(state.query);
+    render();
+  }
+
+  const openReport = event.target.closest("[data-open-report]");
+  if (openReport) {
+    navigate(openReport.dataset.openReport);
+  }
+});
+
+document.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-scan-form]");
+  if (!form) return;
+
+  event.preventDefault();
+  const data = new FormData(form);
+  state.query = data.get("query") || "";
+  state.active = scanFor(state.query);
+  render();
+});
+
+window.addEventListener("popstate", render);
+
+render();
