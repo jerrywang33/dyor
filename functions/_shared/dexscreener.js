@@ -291,7 +291,7 @@ function buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume2
     ],
     links: Object.entries(links)
       .filter(([, value]) => typeof value === "string" && value.startsWith("http"))
-      .map(([label, url]) => ({ label: titleCase(label), url })),
+      .map(([label, url]) => ({ label: linkLabel(label), url })),
   };
 }
 
@@ -455,9 +455,12 @@ function buildLinks(best, base) {
   const twitter = socialLinks.find((link) => link.type === "twitter" || /x\.com|twitter\.com/i.test(link.url || ""));
   const telegram = socialLinks.find((link) => link.type === "telegram" || /t\.me/i.test(link.url || ""));
   const discord = socialLinks.find((link) => link.type === "discord" || /discord/i.test(link.url || ""));
+  const explorerLinks = buildExplorerLinks(best.chainId, base.address, best.pairAddress);
 
   return {
     dexscreener: safeUrl(best.url),
+    explorer: explorerLinks.token,
+    pairExplorer: explorerLinks.pair,
     website: safeUrl(website?.url),
     docs: safeUrl(docs?.url),
     x: safeUrl(twitter?.url),
@@ -465,6 +468,42 @@ function buildLinks(best, base) {
     discord: safeUrl(discord?.url),
     pair: best.pairAddress || null,
     baseToken: base.address || null,
+  };
+}
+
+function buildExplorerLinks(chainId, tokenAddress, pairAddress) {
+  const chain = String(chainId || "").toLowerCase();
+  const evmExplorers = {
+    arbitrum: "https://arbiscan.io",
+    avalanche: "https://snowtrace.io",
+    base: "https://basescan.org",
+    bsc: "https://bscscan.com",
+    ethereum: "https://etherscan.io",
+    linea: "https://lineascan.build",
+    optimism: "https://optimistic.etherscan.io",
+    polygon: "https://polygonscan.com",
+  };
+
+  if (chain === "solana") {
+    return {
+      token: tokenAddress ? `https://solscan.io/token/${encodeURIComponent(tokenAddress)}` : null,
+      pair: pairAddress ? `https://solscan.io/account/${encodeURIComponent(pairAddress)}` : null,
+    };
+  }
+
+  if (chain === "sui") {
+    return {
+      token: tokenAddress ? `https://suiscan.xyz/mainnet/coin/${encodeURIComponent(tokenAddress)}/txs` : null,
+      pair: pairAddress ? `https://suiscan.xyz/mainnet/object/${encodeURIComponent(pairAddress)}` : null,
+    };
+  }
+
+  const explorer = evmExplorers[chain];
+  if (!explorer) return { token: null, pair: null };
+
+  return {
+    token: tokenAddress ? `${explorer}/token/${encodeURIComponent(tokenAddress)}` : null,
+    pair: pairAddress ? `${explorer}/address/${encodeURIComponent(pairAddress)}` : null,
   };
 }
 
@@ -552,7 +591,18 @@ function formatChain(chainId) {
 function titleCase(value) {
   return String(value)
     .replace(/[-_]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function linkLabel(value) {
+  const labels = {
+    dexscreener: "Dexscreener",
+    docs: "Docs",
+    pairExplorer: "Pair Explorer",
+    x: "X",
+  };
+  return labels[value] || titleCase(value);
 }
 
 function shortAddress(value) {

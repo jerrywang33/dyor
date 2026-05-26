@@ -666,6 +666,8 @@ function labelize(value) {
     baseToken: "Base token",
     dexscreener: "Dexscreener",
     docs: "Docs",
+    explorer: "Explorer",
+    pairExplorer: "Pair Explorer",
     x: "X",
   };
   return (
