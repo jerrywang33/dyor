@@ -539,6 +539,39 @@ button {
   margin-top: 18px;
 }
 
+.scan-freshness {
+  margin-top: 12px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.source-links a {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--cyan);
+  background: rgba(103, 232, 249, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.source-links a:hover {
+  border-color: rgba(103, 232, 249, 0.45);
+  background: rgba(103, 232, 249, 0.12);
+}
+
 .signal-strip {
   border-block: 1px solid var(--line);
   display: grid;
@@ -703,6 +736,88 @@ button {
   padding: 20px;
 }
 
+.report-card-body {
+  display: grid;
+  gap: 22px;
+}
+
+.report-card-body h2 {
+  margin: 0 0 -8px;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-head .kicker {
+  margin-bottom: 0;
+}
+
+.section-head small {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.evidence-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.evidence-group {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.evidence-group h3 {
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+  color: var(--soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.evidence-row {
+  min-height: 38px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+}
+
+.evidence-row:first-of-type {
+  border-top: 0;
+}
+
+.evidence-row span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.evidence-row strong {
+  color: var(--soft);
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .finding-list {
   display: grid;
   gap: 12px;
@@ -768,6 +883,10 @@ button {
 
   .signal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .evidence-grid {
+    grid-template-columns: 1fr;
   }
 
   .signal-strip {

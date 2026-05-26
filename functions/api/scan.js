@@ -66,6 +66,7 @@ async function scanDexscreener(query) {
   const symbol = base.symbol || query.toUpperCase();
   const title = base.name || symbol;
   const id = slug(`${symbol}-${best.chainId || "chain"}`);
+  const links = buildLinks(best, base);
 
   return {
     id,
@@ -86,11 +87,8 @@ async function scanDexscreener(query) {
       source: `${best.dexId || "DEX"} / ${quote.symbol || "quote"}`,
     },
     findings: buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, priceChange24h }),
-    links: {
-      dexscreener: best.url || null,
-      pair: best.pairAddress || null,
-      baseToken: base.address || null,
-    },
+    evidence: buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume24h }),
+    links,
   };
 }
 
@@ -228,6 +226,54 @@ function buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, pri
   return findings.slice(0, 5);
 }
 
+function buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume24h }) {
+  const base = best.baseToken || {};
+  const quote = best.quoteToken || {};
+  const txns24h = txns(best?.txns?.h24);
+
+  return {
+    identity: [
+      ["Chain", formatChain(best.chainId)],
+      ["Symbol", base.symbol || "Unknown"],
+      ["Token", shortAddress(base.address)],
+      ["Primary pair", shortAddress(best.pairAddress)],
+    ],
+    market: [
+      ["Primary DEX", titleCase(best.dexId || "DEX")],
+      ["Quote asset", quote.symbol || "Unknown"],
+      ["Pool age", formatAge(best.pairCreatedAt)],
+      ["24h transactions", `${txns24h.total || 0} (${txns24h.buys || 0} buys / ${txns24h.sells || 0} sells)`],
+      ["Matched pools", `${pairCount} total, ${selected.length} used`],
+      ["Liquidity / volume", `${money(liquidityUsd)} / ${money(volume24h)} 24h`],
+    ],
+    links: Object.entries(links)
+      .filter(([, value]) => typeof value === "string" && value.startsWith("http"))
+      .map(([label, url]) => ({ label: titleCase(label), url })),
+  };
+}
+
+function buildLinks(best, base) {
+  const info = best.info || {};
+  const websiteLinks = Array.isArray(info.websites) ? info.websites : [];
+  const socialLinks = Array.isArray(info.socials) ? info.socials : [];
+  const website = websiteLinks.find((link) => /website/i.test(link.label || "")) || websiteLinks[0];
+  const docs = websiteLinks.find((link) => /docs?/i.test(link.label || ""));
+  const twitter = socialLinks.find((link) => link.type === "twitter" || /x\.com|twitter\.com/i.test(link.url || ""));
+  const telegram = socialLinks.find((link) => link.type === "telegram" || /t\.me/i.test(link.url || ""));
+  const discord = socialLinks.find((link) => link.type === "discord" || /discord/i.test(link.url || ""));
+
+  return {
+    dexscreener: safeUrl(best.url),
+    website: safeUrl(website?.url),
+    docs: safeUrl(docs?.url),
+    x: safeUrl(twitter?.url),
+    telegram: safeUrl(telegram?.url),
+    discord: safeUrl(discord?.url),
+    pair: best.pairAddress || null,
+    baseToken: base.address || null,
+  };
+}
+
 function scoreRisk({ liquidityUsd, volume24h, pairCount, priceChange24h }) {
   let score = 48;
   const volumeToLiquidity = liquidityUsd > 0 ? volume24h / liquidityUsd : 0;
@@ -269,6 +315,17 @@ function formatPrice(value) {
   return `$${price.toPrecision(4)}`;
 }
 
+function formatAge(timestamp) {
+  const createdAt = number(timestamp);
+  if (!createdAt) return "Not reported";
+
+  const days = Math.max(0, Math.floor((Date.now() - createdAt) / 86_400_000));
+  if (days < 1) return "New pool";
+  if (days < 30) return `${days}d`;
+  if (days < 365) return `${Math.floor(days / 30)}mo`;
+  return `${Math.floor(days / 365)}y`;
+}
+
 function money(value) {
   const amount = number(value);
   if (!amount) return "$0";
@@ -302,6 +359,28 @@ function titleCase(value) {
   return String(value)
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function shortAddress(value) {
+  const text = String(value || "");
+  if (!text) return "Not reported";
+  if (text.length <= 14) return text;
+  return `${text.slice(0, 6)}...${text.slice(-4)}`;
+}
+
+function txns(value) {
+  const buys = number(value?.buys);
+  const sells = number(value?.sells);
+  return { buys, sells, total: buys + sells };
+}
+
+function safeUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeIdentity(value) {

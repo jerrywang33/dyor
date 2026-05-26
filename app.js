@@ -202,6 +202,8 @@ function normalizeScan(report, query) {
     verdict: report.verdict || fallback.verdict,
     metrics: report.metrics && typeof report.metrics === "object" ? report.metrics : fallback.metrics,
     findings: Array.isArray(report.findings) && report.findings.length ? report.findings : fallback.findings,
+    evidence: report.evidence && typeof report.evidence === "object" ? report.evidence : fallback.evidence,
+    links: report.links && typeof report.links === "object" ? report.links : fallback.links,
   };
 }
 
@@ -280,6 +282,119 @@ function metricRows(scan) {
     .join("");
 }
 
+function formatUpdatedAt(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function labelize(value) {
+  const labels = {
+    baseToken: "Base token",
+    dexscreener: "Dexscreener",
+    docs: "Docs",
+    x: "X",
+  };
+  return (
+    labels[value] ||
+    String(value || "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function sourceLinks(scan, limit = 5) {
+  const evidenceLinks = Array.isArray(scan.evidence?.links) ? scan.evidence.links : [];
+  const links = [
+    ...evidenceLinks.map((item) => ({ label: item.label, url: item.url })),
+    ...Object.entries(scan.links || {}).map(([label, url]) => ({ label: labelize(label), url })),
+  ];
+  const seen = new Set();
+
+  return links
+    .map((link) => ({ label: labelize(link.label), url: safeExternalUrl(link.url) }))
+    .filter((link) => {
+      if (!link.url || seen.has(link.url)) return false;
+      seen.add(link.url);
+      return true;
+    })
+    .slice(0, limit);
+}
+
+function sourceLinkButtons(scan, limit = 4) {
+  const links = sourceLinks(scan, limit);
+  if (!links.length) return "";
+
+  return `
+    <div class="source-links" aria-label="Evidence links">
+      ${links
+        .map(
+          (link) => `
+            <a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function evidenceBlock(scan) {
+  const evidence = scan.evidence;
+  if (!evidence) return "";
+
+  const groups = [
+    ["Identity", evidence.identity],
+    ["Market", evidence.market],
+  ]
+    .filter(([, rows]) => Array.isArray(rows) && rows.length)
+    .map(
+      ([title, rows]) => `
+        <div class="evidence-group">
+          <h3>${escapeHtml(title)}</h3>
+          ${rows
+            .map(
+              ([label, value]) => `
+                <div class="evidence-row">
+                  <span>${escapeHtml(label)}</span>
+                  <strong>${escapeHtml(value)}</strong>
+                </div>
+              `,
+            )
+            .join("")}
+        </div>
+      `,
+    )
+    .join("");
+
+  if (!groups && !sourceLinks(scan).length) return "";
+
+  return `
+    <section class="evidence-panel">
+      <div class="section-head">
+        <span class="kicker">Evidence</span>
+        ${scan.updatedAt ? `<small>Updated ${escapeHtml(formatUpdatedAt(scan.updatedAt))}</small>` : ""}
+      </div>
+      <div class="evidence-grid">${groups}</div>
+      ${sourceLinkButtons(scan, 6)}
+    </section>
+  `;
+}
+
 function scanPanel() {
   const scan = state.active;
   const tone = riskTone(scan.risk);
@@ -330,6 +445,12 @@ function scanPanel() {
             </div>
           </div>
           <div class="metric-list">${metricRows(scan)}</div>
+          ${
+            scan.updatedAt
+              ? `<div class="scan-freshness">Updated ${escapeHtml(formatUpdatedAt(scan.updatedAt))}</div>`
+              : ""
+          }
+          ${sourceLinkButtons(scan)}
           <button class="ghost-btn" type="button" data-open-report="/r/${escapeHtml(scan.id)}">Open report</button>
         </aside>
       </div>
@@ -454,7 +575,14 @@ function reportPage(id) {
         <div class="report-card-head">
           <span class="kicker">Shareable DYOR Report</span>
           <h1>${escapeHtml(scan.title)}</h1>
-          <p>${escapeHtml(scan.chain)} · Risk score ${scan.risk} · ${escapeHtml(scan.verdict)}</p>
+          <p>
+            ${escapeHtml(scan.chain)} · Risk score ${scan.risk} · ${escapeHtml(scan.verdict)}
+            ${
+              scan.live && scan.source
+                ? ` · live via ${escapeHtml(scan.source)}${scan.updatedAt ? ` · ${escapeHtml(formatUpdatedAt(scan.updatedAt))}` : ""}`
+                : ""
+            }
+          </p>
         </div>
         <div class="report-card-body">
           <div class="risk-head">
@@ -467,6 +595,7 @@ function reportPage(id) {
             </div>
           </div>
           <div class="metric-list">${metricRows(scan)}</div>
+          ${evidenceBlock(scan)}
           <h2>Findings</h2>
           <div class="finding-list">
             ${scan.findings
