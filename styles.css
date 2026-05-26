@@ -77,9 +77,8 @@ button {
   border-radius: 8px;
   background: #0c0c0f;
   color: var(--cyan);
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 17px;
+  line-height: 1;
 }
 
 .brand strong {

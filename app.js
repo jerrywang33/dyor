@@ -145,7 +145,7 @@ function header() {
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link aria-label="DYOR.sh home">
-        <span class="brand-mark" aria-hidden="true">$_</span>
+        <span class="brand-mark" aria-hidden="true">🔍</span>
         <span>
           <strong>dyor.sh</strong>
           <small>research shell</small>
