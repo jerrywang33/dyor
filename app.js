@@ -273,6 +273,9 @@ function parseShellInput(value) {
   const query = String(value || "").trim();
   if (!query) return { mode: "empty" };
 
+  const watchCommand = query.match(/^(?:dyor\s+)?\/?watch\s+(.+)$/i);
+  if (watchCommand) return { mode: "watch", query: cleanScanQuery(watchCommand[1]) };
+
   const scanCommand = query.match(/^(?:dyor\s+)?\/?scan\s+(.+)$/i);
   if (scanCommand) return { mode: "scan", query: cleanScanQuery(scanCommand[1]) };
 
@@ -370,6 +373,11 @@ async function performScan(value, options = {}) {
     return;
   }
 
+  if (input.mode === "watch") {
+    await performScan(input.query, { ...options, addToWatch: true });
+    return;
+  }
+
   const query = input.query;
   if (!query) return;
 
@@ -393,11 +401,19 @@ async function performScan(value, options = {}) {
     state.active = await persistReport(normalizeScan(report, query));
     state.query = state.active.label || query;
     rememberReport(state.active);
-    refreshWatchedReport(state.active);
+    if (options.addToWatch) {
+      addWatchedReport(state.active);
+    } else {
+      refreshWatchedReport(state.active);
+    }
   } catch (error) {
     state.active = scanFor(query);
     state.comparison = null;
-    refreshWatchedReport(state.active);
+    if (options.addToWatch) {
+      addWatchedReport(state.active);
+    } else {
+      refreshWatchedReport(state.active);
+    }
     state.error = `Live scan unavailable. Showing prototype profile. ${
       error instanceof Error ? error.message : ""
     }`.trim();
@@ -451,6 +467,49 @@ async function performCompare(leftQuery, rightQuery, options = {}) {
     }
     render();
   }
+}
+
+async function refreshWatchlist() {
+  if (state.loading || !state.watchlist.length) return;
+
+  const currentItems = state.watchlist.slice(0, WATCHLIST_LIMIT);
+  const refreshed = [];
+  let failures = 0;
+
+  state.loading = true;
+  state.error = "";
+  state.comparison = null;
+  state.query = "refresh queue";
+  render();
+
+  for (const item of currentItems) {
+    try {
+      const response = await fetch(`/api/scan?q=${encodeURIComponent(item.query || item.label)}`, {
+        headers: { accept: "application/json" },
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || payload.error || `Scan failed with ${response.status}`);
+      }
+
+      const report = await persistReport(normalizeScan(await response.json(), item.query || item.label));
+      rememberReport(report);
+      refreshed.push(watchItemFromScan(report));
+      if (!state.active || state.active.id === item.id) state.active = report;
+    } catch {
+      failures += 1;
+      refreshed.push({
+        ...item,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  saveWatchlist(refreshed);
+  state.loading = false;
+  state.error = failures ? `${failures} watched report${failures === 1 ? "" : "s"} could not refresh. Kept the last local snapshot.` : "";
+  render();
 }
 
 async function persistReport(report) {
@@ -1291,6 +1350,7 @@ function scanPanel() {
           )
           .join("")}
         <button class="chip chip-compare" type="button" data-sample="ASTER vs CLOUD" ${state.loading ? "disabled" : ""}>ASTER vs CLOUD</button>
+        <button class="chip chip-watch" type="button" data-sample="/watch ASTER" ${state.loading ? "disabled" : ""}>/watch ASTER</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       ${
@@ -1343,6 +1403,9 @@ function watchlistBlock() {
         </p>
         <div class="watchlist-actions">
           ${active ? watchButton(active) : ""}
+          <button class="ghost-btn refresh-btn" type="button" data-refresh-watchlist ${!items.length || state.loading ? "disabled" : ""}>
+            ${state.loading ? "Refreshing" : "Refresh queue"}
+          </button>
         </div>
       </div>
       <div class="watchlist-panel">
@@ -1864,6 +1927,11 @@ document.addEventListener("click", (event) => {
   if (removeWatch) {
     removeWatchedReport(removeWatch.dataset.removeWatch);
     render();
+  }
+
+  const refreshWatch = event.target.closest("[data-refresh-watchlist]");
+  if (refreshWatch) {
+    refreshWatchlist();
   }
 });
 
