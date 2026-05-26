@@ -104,6 +104,8 @@ const samples = [
 ];
 
 const defaultScan = samples[0];
+const WATCHLIST_KEY = "dyor.watchlist.v1";
+const WATCHLIST_LIMIT = 8;
 
 const state = {
   active: defaultScan,
@@ -113,6 +115,7 @@ const state = {
   error: "",
   routeRequest: "",
   comparison: null,
+  watchlist: loadWatchlist(),
 };
 
 const app = document.querySelector("#app");
@@ -170,6 +173,82 @@ function loadRememberedComparison(id) {
   } catch {
     return null;
   }
+}
+
+function loadWatchlist() {
+  try {
+    const raw = window.localStorage?.getItem(WATCHLIST_KEY);
+    const items = raw ? JSON.parse(raw) : [];
+    return Array.isArray(items) ? items.map(cleanWatchItem).filter(Boolean).slice(0, WATCHLIST_LIMIT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveWatchlist(items) {
+  const next = items.map(cleanWatchItem).filter(Boolean).slice(0, WATCHLIST_LIMIT);
+  state.watchlist = next;
+  try {
+    window.localStorage?.setItem(WATCHLIST_KEY, JSON.stringify(next));
+  } catch {
+    // Local watchlist storage is best-effort only.
+  }
+}
+
+function cleanWatchItem(item) {
+  if (!item || typeof item !== "object") return null;
+  const id = String(item.id || "").slice(0, 120);
+  if (!id) return null;
+
+  return {
+    id,
+    label: String(item.label || id).slice(0, 48),
+    title: String(item.title || item.label || id).slice(0, 96),
+    chain: String(item.chain || "Unknown chain").slice(0, 64),
+    risk: Math.max(0, Math.min(100, Math.round(Number(item.risk) || 0))),
+    verdict: String(item.verdict || "Needs review").slice(0, 120),
+    query: String(item.query || item.label || id).slice(0, 160),
+    path: String(item.path || `/r/${encodeURIComponent(id)}`).slice(0, 240),
+    updatedAt: String(item.updatedAt || new Date().toISOString()),
+    liquidityUsd: Number(item.liquidityUsd) || 0,
+    volume24h: Number(item.volume24h) || 0,
+    confidenceScore: Number(item.confidenceScore) || 0,
+  };
+}
+
+function watchItemFromScan(scan) {
+  return cleanWatchItem({
+    id: scan.id,
+    label: scan.label,
+    title: scan.title,
+    chain: scan.chain,
+    risk: scan.risk,
+    verdict: scan.verdict,
+    query: scan.links?.baseToken || scan.label || scan.id,
+    path: reportPath(scan),
+    updatedAt: scan.updatedAt || new Date().toISOString(),
+    liquidityUsd: scan.numbers?.liquidityUsd,
+    volume24h: scan.numbers?.volume24h,
+    confidenceScore: scan.confidence?.score || scan.numbers?.confidenceScore,
+  });
+}
+
+function isWatchedReport(id) {
+  return state.watchlist.some((item) => item.id === id);
+}
+
+function addWatchedReport(scan) {
+  const item = watchItemFromScan(scan);
+  if (!item) return;
+  saveWatchlist([item, ...state.watchlist.filter((current) => current.id !== item.id)]);
+}
+
+function removeWatchedReport(id) {
+  saveWatchlist(state.watchlist.filter((item) => item.id !== id));
+}
+
+function refreshWatchedReport(scan) {
+  if (scan?.id && isWatchedReport(scan.id)) addWatchedReport(scan);
 }
 
 function riskTone(score) {
@@ -314,9 +393,11 @@ async function performScan(value, options = {}) {
     state.active = await persistReport(normalizeScan(report, query));
     state.query = state.active.label || query;
     rememberReport(state.active);
+    refreshWatchedReport(state.active);
   } catch (error) {
     state.active = scanFor(query);
     state.comparison = null;
+    refreshWatchedReport(state.active);
     state.error = `Live scan unavailable. Showing prototype profile. ${
       error instanceof Error ? error.message : ""
     }`.trim();
@@ -352,10 +433,14 @@ async function performCompare(leftQuery, rightQuery, options = {}) {
     state.active = state.comparison.left;
     state.query = state.comparison.label;
     rememberComparison(state.comparison);
+    refreshWatchedReport(state.comparison.left);
+    refreshWatchedReport(state.comparison.right);
   } catch (error) {
     state.comparison = compareFor(leftQuery, rightQuery);
     state.active = state.comparison.left;
     rememberComparison(state.comparison);
+    refreshWatchedReport(state.comparison.left);
+    refreshWatchedReport(state.comparison.right);
     state.error = `Live compare unavailable. Showing prototype comparison. ${
       error instanceof Error ? error.message : ""
     }`.trim();
@@ -719,6 +804,15 @@ function sourceLinkButtons(scan, limit = 4) {
         )
         .join("")}
     </div>
+  `;
+}
+
+function watchButton(scan) {
+  const watched = isWatchedReport(scan.id);
+  return `
+    <button class="ghost-btn watch-btn ${watched ? "watching" : ""}" type="button" data-toggle-watch="${escapeHtml(scan.id)}">
+      ${watched ? "Watching" : "Watch"}
+    </button>
   `;
 }
 
@@ -1225,12 +1319,78 @@ function scanPanel() {
                 <div class="panel-actions">
                   <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(scan))}">Open report</button>
                   <button class="ghost-btn" type="button" data-copy-report="${escapeHtml(scan.id)}">Copy brief</button>
+                  ${watchButton(scan)}
                 </div>
               </aside>
             </div>
           `
       }
     </div>
+  `;
+}
+
+function watchlistBlock() {
+  const items = state.watchlist;
+  const active = state.comparison ? state.comparison.left : state.active;
+
+  return `
+    <section class="split watchlist-section">
+      <div>
+        <span class="kicker">Research Queue</span>
+        <h2>Pin live reports into a local watch lane.</h2>
+        <p>
+          Keep the tokens you are still investigating in one place. The queue stores only in this browser and refreshes when a watched report is scanned again.
+        </p>
+        <div class="watchlist-actions">
+          ${active ? watchButton(active) : ""}
+        </div>
+      </div>
+      <div class="watchlist-panel">
+        <div class="watchlist-head">
+          <span>${items.length ? `${items.length} watched` : "No watched reports"}</span>
+          <small>Local browser queue</small>
+        </div>
+        ${
+          items.length
+            ? `
+              <div class="watchlist-items">
+                ${items.map(watchlistRow).join("")}
+              </div>
+            `
+            : `
+              <div class="watchlist-empty">
+                <strong>No pinned research yet.</strong>
+                <span>Run a scan, then press Watch to keep it in this queue.</span>
+              </div>
+            `
+        }
+      </div>
+    </section>
+  `;
+}
+
+function watchlistRow(item) {
+  const tone = riskTone(item.risk);
+  return `
+    <article class="watch-item">
+      <div class="watch-main">
+        <strong>${escapeHtml(item.label)}</strong>
+        <span>${escapeHtml(item.title)} · ${escapeHtml(item.chain)}</span>
+      </div>
+      <div class="watch-metrics">
+        <span class="mini-risk ${tone}">${escapeHtml(item.risk)}</span>
+        <span>Liquidity <strong>${escapeHtml(formatMoney(item.liquidityUsd))}</strong></span>
+        <span>Confidence <strong>${escapeHtml(item.confidenceScore || "?")}</strong></span>
+      </div>
+      <div class="watch-meta">
+        <span>${escapeHtml(item.verdict)}</span>
+        <small>${escapeHtml(formatUpdatedAt(item.updatedAt))}</small>
+      </div>
+      <div class="watch-row-actions">
+        <button class="ghost-btn" type="button" data-open-report="${escapeHtml(item.path)}">Open</button>
+        <button class="ghost-btn" type="button" data-remove-watch="${escapeHtml(item.id)}">Remove</button>
+      </div>
+    </article>
   `;
 }
 
@@ -1269,6 +1429,7 @@ function home() {
       </section>
 
       <div class="sections">
+        ${watchlistBlock()}
         <section class="split">
           <div>
             <span class="kicker">Agent Workflow</span>
@@ -1429,6 +1590,7 @@ function loadSnapshotReport(id, snapshotId, fallbackQuery) {
       state.query = state.active.label || fallbackQuery || "";
       state.loading = false;
       rememberReport(state.active);
+      refreshWatchedReport(state.active);
       render();
     })
     .catch((error) => {
@@ -1538,6 +1700,7 @@ function reportView(scan) {
       <div class="page-actions">
         <a class="ghost-btn" href="/" data-link>Back to shell</a>
         <button class="ghost-btn" type="button" data-copy-report="${escapeHtml(scan.id)}">Copy brief</button>
+        ${watchButton(scan)}
       </div>
       <div class="report-card">
         <div class="report-card-head">
@@ -1678,6 +1841,29 @@ document.addEventListener("click", (event) => {
     const id = copyCompare.dataset.copyCompare;
     const comparison = state.comparison?.id === id ? state.comparison : loadRememberedComparison(id);
     if (comparison) copyText(comparisonMarkdown(comparison), copyCompare);
+  }
+
+  const toggleWatch = event.target.closest("[data-toggle-watch]");
+  if (toggleWatch) {
+    const id = toggleWatch.dataset.toggleWatch;
+    const scan =
+      (state.active?.id === id ? state.active : null) ||
+      samples.find((sample) => sample.id === id) ||
+      loadRememberedReport(id);
+    if (scan) {
+      if (isWatchedReport(scan.id)) {
+        removeWatchedReport(scan.id);
+      } else {
+        addWatchedReport(scan);
+      }
+      render();
+    }
+  }
+
+  const removeWatch = event.target.closest("[data-remove-watch]");
+  if (removeWatch) {
+    removeWatchedReport(removeWatch.dataset.removeWatch);
+    render();
   }
 });
 
