@@ -252,34 +252,16 @@ function home() {
   return `
     <div class="home">
       <section class="hero">
-        <div class="hero-layout">
-          <div class="hero-copy">
-            <span class="eyebrow">AI-Native Research Shell</span>
-            <h1 class="wordmark">dyor.sh</h1>
-            <p class="hero-title">
-              Crypto research that keeps <span>risk, evidence, and uncertainty</span> in the same window.
-            </p>
-            <p class="hero-text">
-              Type a token, contract, project, or social link. The agent turns fragmented market data into a structured research brief.
-            </p>
-            <div class="hero-stats" aria-label="Research scope">
-              <span><strong>4</strong> risk surfaces</span>
-              <span><strong>0</strong> buy or sell calls</span>
-              <span><strong>24/7</strong> watch triggers</span>
-            </div>
-          </div>
-          <div class="hero-product">
-            ${scanPanel()}
-          </div>
+        <h1 class="wordmark">dyor.sh</h1>
+        <div class="hero-copy">
+          <h1>
+            Your AI-Native research shell for <span>crypto risk, evidence, and signals.</span>
+          </h1>
+          <p>
+            Type a token, contract, project, or social link. The agent turns fragmented market data into a structured research brief.
+          </p>
         </div>
-        <div class="signal-strip" aria-label="Research signal coverage">
-          <span>Identity</span>
-          <span>Liquidity</span>
-          <span>Holders</span>
-          <span>Unlocks</span>
-          <span>Source</span>
-          <span>Attention</span>
-        </div>
+        ${scanPanel()}
       </section>
 
       <div class="sections">
