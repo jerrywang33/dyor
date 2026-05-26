@@ -155,6 +155,23 @@ function loadRememberedSnapshot(id) {
   }
 }
 
+function rememberComparison(comparison) {
+  try {
+    window.localStorage?.setItem(`dyor.compare.${comparison.id}`, JSON.stringify(comparison));
+  } catch {
+    // Local comparison caching is best-effort only.
+  }
+}
+
+function loadRememberedComparison(id) {
+  try {
+    const raw = window.localStorage?.getItem(`dyor.compare.${id}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 function riskTone(score) {
   if (score >= 70) return "high";
   if (score >= 45) return "mid";
@@ -276,7 +293,7 @@ async function performScan(value, options = {}) {
   }
 }
 
-async function performCompare(leftQuery, rightQuery) {
+async function performCompare(leftQuery, rightQuery, options = {}) {
   if (state.loading) return;
 
   state.query = `${leftQuery} vs ${rightQuery}`;
@@ -298,14 +315,19 @@ async function performCompare(leftQuery, rightQuery) {
     state.comparison = normalizeComparison(await response.json(), leftQuery, rightQuery);
     state.active = state.comparison.left;
     state.query = state.comparison.label;
+    rememberComparison(state.comparison);
   } catch (error) {
     state.comparison = compareFor(leftQuery, rightQuery);
     state.active = state.comparison.left;
+    rememberComparison(state.comparison);
     state.error = `Live compare unavailable. Showing prototype comparison. ${
       error instanceof Error ? error.message : ""
     }`.trim();
   } finally {
     state.loading = false;
+    if (options.replaceCompareRoute && state.comparison) {
+      window.history.replaceState({}, "", comparisonPath(state.comparison));
+    }
     render();
   }
 }
@@ -498,6 +520,16 @@ function reportPath(scan) {
   return `/r/${encodeURIComponent(scan.id)}${suffix}`;
 }
 
+function comparisonPath(comparison) {
+  const params = new URLSearchParams();
+  const left = comparison.left?.links?.baseToken || comparison.left?.label || "";
+  const right = comparison.right?.links?.baseToken || comparison.right?.label || "";
+  if (left) params.set("a", left);
+  if (right) params.set("b", right);
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+  return `/c/${encodeURIComponent(comparison.id || "compare")}${suffix}`;
+}
+
 function header() {
   return `
     <header class="topbar">
@@ -668,6 +700,7 @@ function comparisonGrid(comparison) {
           ${scorePill(comparison.right, comparison.scores?.right, "right", comparison.scores?.leader)}
         </div>
         <div class="compare-actions">
+          <button class="ghost-btn" type="button" data-open-compare="${escapeHtml(comparisonPath(comparison))}">Compare page</button>
           <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(comparison.left))}">${escapeHtml(comparison.left.label)} report</button>
           <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(comparison.right))}">${escapeHtml(comparison.right.label)} report</button>
         </div>
@@ -1094,6 +1127,38 @@ function reportPage(id) {
   return reportView(displayScan);
 }
 
+function comparePage(id) {
+  const routeUrl = new URL(window.location.href);
+  const leftQuery = routeUrl.searchParams.get("a") || routeUrl.searchParams.get("left");
+  const rightQuery = routeUrl.searchParams.get("b") || routeUrl.searchParams.get("right");
+  const parsedQuery = parseCompareQuery(routeUrl.searchParams.get("q") || routeUrl.searchParams.get("query"));
+  const pair = leftQuery && rightQuery ? [leftQuery, rightQuery] : parsedQuery;
+  const currentComparison = state.comparison?.id === id ? state.comparison : null;
+
+  if (currentComparison) {
+    return compareView(currentComparison);
+  }
+
+  if (pair) {
+    loadRouteCompare(id, pair[0], pair[1]);
+    return compareLoadingPage(id, pair[0], pair[1]);
+  }
+
+  const cachedComparison = loadRememberedComparison(id);
+  if (cachedComparison) {
+    return compareView(cachedComparison);
+  }
+
+  return compareLoadingPage(id, "", "", "Missing compare query. Use a route like /c/aster-vs-cloud?a=ASTER&b=CLOUD.");
+}
+
+function loadRouteCompare(id, leftQuery, rightQuery) {
+  const requestKey = `${id}:compare:${leftQuery}:${rightQuery}`;
+  if (state.routeRequest === requestKey || state.loading) return;
+  state.routeRequest = requestKey;
+  performCompare(leftQuery, rightQuery, { replaceCompareRoute: true });
+}
+
 function loadSnapshotReport(id, snapshotId, fallbackQuery) {
   const requestKey = `${id}:snapshot:${snapshotId}`;
   if (state.routeRequest === requestKey || state.loading) return;
@@ -1158,6 +1223,67 @@ function reportLoadingPage(id) {
         </div>
         <div class="report-card-body">
           <div class="scan-error">${state.error ? escapeHtml(state.error) : "Fetching live market evidence..."}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function compareLoadingPage(id, leftQuery, rightQuery, message = "") {
+  const label = leftQuery && rightQuery ? `${leftQuery} vs ${rightQuery}` : id;
+  return `
+    <section class="report-page compare-page">
+      <a class="ghost-btn" href="/" data-link>Back to shell</a>
+      <div class="report-card">
+        <div class="report-card-head">
+          <span class="kicker">Shareable DYOR Compare</span>
+          <h1>Loading compare</h1>
+          <p>${escapeHtml(message || `Resolving ${label} with the live research API.`)}</p>
+        </div>
+        <div class="report-card-body">
+          <div class="scan-error">${state.error ? escapeHtml(state.error) : "Fetching live market evidence..."}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function compareView(comparison) {
+  const findings = Array.isArray(comparison.findings) ? comparison.findings : [];
+  return `
+    <section class="report-page compare-page">
+      <a class="ghost-btn" href="/" data-link>Back to shell</a>
+      <div class="report-card">
+        <div class="report-card-head">
+          <span class="kicker">Shareable DYOR Compare</span>
+          <h1>${escapeHtml(comparison.title || comparison.label)}</h1>
+          <p>
+            ${escapeHtml(comparison.verdict)}
+            ${
+              comparison.source
+                ? ` · live via ${escapeHtml(comparison.source)}${comparison.updatedAt ? ` · ${escapeHtml(formatUpdatedAt(comparison.updatedAt))}` : ""}`
+                : ""
+            }
+          </p>
+        </div>
+        <div class="report-card-body">
+          ${comparisonGrid(comparison)}
+          ${
+            findings.length
+              ? `
+                <h2>Comparison Findings</h2>
+                <div class="finding-list">
+                  ${findings
+                    .map(
+                      ([itemTone, text]) => `
+                        <div class="finding" style="--tone: ${toneColor(itemTone)}">${escapeHtml(text)}</div>
+                      `,
+                    )
+                    .join("")}
+                </div>
+              `
+              : ""
+          }
         </div>
       </div>
     </section>
@@ -1251,6 +1377,10 @@ function render() {
     view = reportPage(path.split("/").filter(Boolean)[1]);
   }
 
+  if (path.startsWith("/c/")) {
+    view = comparePage(path.split("/").filter(Boolean)[1]);
+  }
+
   if (path === "/docs") {
     view = docsPage();
   }
@@ -1282,6 +1412,11 @@ document.addEventListener("click", (event) => {
   const openReport = event.target.closest("[data-open-report]");
   if (openReport) {
     navigate(openReport.dataset.openReport);
+  }
+
+  const openCompare = event.target.closest("[data-open-compare]");
+  if (openCompare) {
+    navigate(openCompare.dataset.openCompare);
   }
 });
 
