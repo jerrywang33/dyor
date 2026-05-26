@@ -190,9 +190,29 @@ function normalizeQuery(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function parseShellInput(value) {
+  const query = String(value || "").trim();
+  if (!query) return { mode: "empty" };
+
+  const scanCommand = query.match(/^(?:dyor\s+)?\/?scan\s+(.+)$/i);
+  if (scanCommand) return { mode: "scan", query: cleanScanQuery(scanCommand[1]) };
+
+  const compareCommand = query.match(/^(?:dyor\s+)?\/?compare\s+(.+)$/i);
+  if (compareCommand) {
+    const pair = parseCompareQuery(compareCommand[1]) || parseCompareWords(compareCommand[1]);
+    if (pair) return { mode: "compare", left: pair[0], right: pair[1] };
+  }
+
+  const pair = parseCompareQuery(query);
+  if (pair) return { mode: "compare", left: pair[0], right: pair[1] };
+
+  return { mode: "scan", query: cleanScanQuery(query) };
+}
+
 function parseCompareQuery(value) {
   const query = String(value || "").trim();
   if (!query) return null;
+  if (/^https?:\/\//i.test(query)) return null;
 
   const match =
     query.match(/^(.+?)\s+(?:vs\.?|versus)\s+(.+)$/i) ||
@@ -205,12 +225,26 @@ function parseCompareQuery(value) {
   return pair[0] && pair[1] ? pair : null;
 }
 
+function parseCompareWords(value) {
+  const parts = String(value || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  return [cleanCompareToken(parts[0]), cleanCompareToken(parts.slice(1).join(" "))];
+}
+
 function cleanCompareToken(value) {
   return String(value || "")
     .trim()
     .replace(/^\$+/, "")
     .replace(/\s+/g, " ")
     .slice(0, 80);
+}
+
+function cleanScanQuery(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^\$+/, "")
+    .replace(/\s+/g, " ")
+    .slice(0, 500);
 }
 
 function scanFor(value) {
@@ -249,14 +283,16 @@ function scanFor(value) {
 async function performScan(value, options = {}) {
   if (state.loading) return;
 
-  const query = String(value || "").trim();
-  if (!query) return;
+  const input = parseShellInput(value);
+  if (input.mode === "empty") return;
 
-  const comparePair = parseCompareQuery(query);
-  if (comparePair) {
-    await performCompare(comparePair[0], comparePair[1]);
+  if (input.mode === "compare") {
+    await performCompare(input.left, input.right);
     return;
   }
+
+  const query = input.query;
+  if (!query) return;
 
   state.query = query;
   state.loading = true;

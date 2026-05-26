@@ -51,8 +51,11 @@ function normalizePair(left, right, query) {
 function parseCompareQuery(value) {
   const query = cleanQuery(value);
   if (!query) return null;
+  if (/^https?:\/\//i.test(query)) return null;
 
   const match =
+    query.match(/^(?:dyor\s+)?\/?compare\s+(.+?)\s+(?:with|to|against)\s+(.+)$/i) ||
+    query.match(/^(?:dyor\s+)?\/?compare\s+(\S+)\s+(.+)$/i) ||
     query.match(/^(.+?)\s+(?:vs\.?|versus)\s+(.+)$/i) ||
     query.match(/^compare\s+(.+?)\s+(?:with|to|against)\s+(.+)$/i) ||
     query.match(/^(.+?)\s*[,/|]\s*(.+)$/);

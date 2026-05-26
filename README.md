@@ -6,7 +6,7 @@ AI-Native research shell for crypto token due diligence.
 
 DYOR.sh is an AI-Native crypto research agent shell. The first screen is the product surface: enter a token, project, contract, or social link and get a structured research brief with risk posture, evidence buckets, and a shareable report route.
 
-The current build ships a static frontend on Cloudflare Pages plus Pages Functions at `/api/scan`, `/api/compare`, and `/api/report`. The first live connector uses Dexscreener to resolve DEX pairs, liquidity, volume, market structure, source links, identity confidence, watch triggers, lightweight risk scores, side-by-side token comparisons, and shareable `/c/...` compare routes. Live report and compare routes include query hints so they can be reopened and refreshed; when a `DYOR_REPORTS` KV binding is available, report snapshots are stored and reopened by snapshot id first. Holder, unlock, deeper source, and social checks remain follow-up surfaces.
+The current build ships a static frontend on Cloudflare Pages plus Pages Functions at `/api/scan`, `/api/compare`, and `/api/report`. The first live connector uses Dexscreener to resolve DEX pairs, liquidity, volume, market structure, source links, identity confidence, watch triggers, lightweight risk scores, side-by-side token comparisons, and shareable `/c/...` compare routes. The shell accepts plain tickers, `/scan`, `/compare`, Dexscreener URLs, and common explorer URLs. Live report and compare routes include query hints so they can be reopened and refreshed; when a `DYOR_REPORTS` KV binding is available, report snapshots are stored and reopened by snapshot id first. Holder, unlock, deeper source, and social checks remain follow-up surfaces.
 
 ## Local development
 

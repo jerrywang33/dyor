@@ -2,14 +2,15 @@ const DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search";
 const DEX_TOKEN_URL = "https://api.dexscreener.com/latest/dex/tokens";
 
 export function cleanQuery(value) {
-  return String(value || "").trim().slice(0, 140);
+  return String(value || "").trim().slice(0, 500);
 }
 
 export async function scanDexscreener(query) {
-  const pairs = await fetchPairs(query);
+  const input = parseResearchInput(query);
+  const pairs = await fetchPairs(input);
   const groups = rankPairGroups(
     pairs.filter((pair) => pair?.baseToken?.symbol || pair?.baseToken?.name),
-    query,
+    input.identity,
   );
   const group = groups[0] || { pairs: [] };
   const selected = group.pairs.sort(comparePairs).slice(0, 10);
@@ -26,13 +27,13 @@ export async function scanDexscreener(query) {
   const risk = scoreRisk({ liquidityUsd, volume24h, pairCount, priceChange24h });
   const base = best.baseToken || {};
   const quote = best.quoteToken || {};
-  const symbol = base.symbol || query.toUpperCase();
+  const symbol = base.symbol || input.identity.toUpperCase();
   const title = base.name || symbol;
   const id = slug(`${symbol}-${best.chainId || "chain"}`);
   const links = buildLinks(best, base);
   const alternatives = buildAlternatives(groups.slice(1, 5));
   const confidence = buildConfidence({
-    query,
+    query: input.identity,
     best,
     group,
     links,
@@ -76,10 +77,13 @@ export async function scanDexscreener(query) {
 }
 
 async function fetchPairs(query) {
-  const tokenLike = isAddressLike(query);
-  const endpoint = tokenLike
-    ? `${DEX_TOKEN_URL}/${encodeURIComponent(query)}`
-    : `${DEX_SEARCH_URL}?q=${encodeURIComponent(query)}`;
+  const input = typeof query === "string" ? parseResearchInput(query) : query;
+  const tokenLike = isAddressLike(input.query);
+  const endpoint = input.pairLookup
+    ? `https://api.dexscreener.com/latest/dex/pairs/${encodeURIComponent(input.pairLookup.chain)}/${encodeURIComponent(input.pairLookup.pairAddress)}`
+    : tokenLike
+      ? `${DEX_TOKEN_URL}/${encodeURIComponent(input.query)}`
+      : `${DEX_SEARCH_URL}?q=${encodeURIComponent(input.query)}`;
 
   const response = await fetch(endpoint, {
     headers: {
@@ -93,7 +97,63 @@ async function fetchPairs(query) {
   }
 
   const data = await response.json();
+  if (data?.pair) return [data.pair].filter(Boolean);
   return Array.isArray(data.pairs) ? data.pairs : [];
+}
+
+function parseResearchInput(value) {
+  let query = cleanQuery(value)
+    .replace(/^(?:dyor\s+)?\/?scan\s+/i, "")
+    .replace(/^\$+/, "")
+    .trim();
+
+  const fromUrl = parseUrlInput(query);
+  if (fromUrl) return fromUrl;
+
+  return {
+    query,
+    identity: query,
+    source: "query",
+  };
+}
+
+function parseUrlInput(value) {
+  try {
+    const url = new URL(String(value || ""));
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const segments = url.pathname.split("/").map((part) => part.trim()).filter(Boolean);
+    const queryParam = url.searchParams.get("q") || url.searchParams.get("query") || url.searchParams.get("search");
+
+    if (host === "dexscreener.com" && segments.length >= 2) {
+      const chain = segments[0];
+      const pairAddress = segments[1];
+      return {
+        query: pairAddress,
+        identity: pairAddress,
+        source: "dexscreener-url",
+        pairLookup: { chain, pairAddress },
+      };
+    }
+
+    const candidate =
+      queryParam ||
+      segments.find((segment) => isAddressLike(segment)) ||
+      url.searchParams.get("a") ||
+      url.searchParams.get("address") ||
+      url.searchParams.get("contract");
+
+    if (candidate) {
+      return {
+        query: candidate,
+        identity: candidate,
+        source: "url",
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 function comparePairs(a, b) {
