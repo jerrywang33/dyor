@@ -72,6 +72,7 @@ const state = {
   route: window.location.pathname,
   loading: false,
   error: "",
+  routeRequest: "",
 };
 
 const app = document.querySelector("#app");
@@ -153,7 +154,7 @@ function scanFor(value) {
   );
 }
 
-async function performScan(value) {
+async function performScan(value, options = {}) {
   if (state.loading) return;
 
   const query = String(value || "").trim();
@@ -185,6 +186,9 @@ async function performScan(value) {
     }`.trim();
   } finally {
     state.loading = false;
+    if (options.replaceReportRoute) {
+      window.history.replaceState({}, "", reportPath(state.active));
+    }
     render();
   }
 }
@@ -212,6 +216,12 @@ function navigate(path) {
   state.route = path;
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function reportPath(scan) {
+  const query = scan.links?.baseToken || scan.label || "";
+  const suffix = query ? `?q=${encodeURIComponent(query)}` : "";
+  return `/r/${encodeURIComponent(scan.id)}${suffix}`;
 }
 
 function header() {
@@ -451,7 +461,7 @@ function scanPanel() {
               : ""
           }
           ${sourceLinkButtons(scan)}
-          <button class="ghost-btn" type="button" data-open-report="/r/${escapeHtml(scan.id)}">Open report</button>
+          <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(scan))}">Open report</button>
         </aside>
       </div>
     </div>
@@ -566,7 +576,48 @@ function home() {
 }
 
 function reportPage(id) {
-  const scan = samples.find((sample) => sample.id === id) || loadRememberedReport(id) || state.active;
+  const routeUrl = new URL(window.location.href);
+  const routeQuery = routeUrl.searchParams.get("q");
+  const scan =
+    samples.find((sample) => sample.id === id) ||
+    loadRememberedReport(id) ||
+    (state.active?.id === id ? state.active : null);
+
+  if (!scan && routeQuery) {
+    loadRouteReport(id, routeQuery);
+    return reportLoadingPage(id);
+  }
+
+  const displayScan = scan || state.active;
+  return reportView(displayScan);
+}
+
+function loadRouteReport(id, query) {
+  const requestKey = `${id}:${query}`;
+  if (state.routeRequest === requestKey || state.loading) return;
+  state.routeRequest = requestKey;
+  performScan(query, { replaceReportRoute: true });
+}
+
+function reportLoadingPage(id) {
+  return `
+    <section class="report-page">
+      <a class="ghost-btn" href="/" data-link>Back to shell</a>
+      <div class="report-card">
+        <div class="report-card-head">
+          <span class="kicker">Shareable DYOR Report</span>
+          <h1>Loading report</h1>
+          <p>Resolving ${escapeHtml(id)} with the live research API.</p>
+        </div>
+        <div class="report-card-body">
+          <div class="scan-error">${state.error ? escapeHtml(state.error) : "Fetching live market evidence..."}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function reportView(scan) {
   const tone = riskTone(scan.risk);
   return `
     <section class="report-page">
