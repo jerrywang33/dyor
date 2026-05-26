@@ -5,9 +5,9 @@
   "description": "AI research shell for crypto token due diligence.",
   "scripts": {
     "dev": "wrangler pages dev .",
-    "build": "node scripts/check-static.mjs",
+    "build": "node scripts/check-static.mjs && node scripts/build-dist.mjs",
     "check": "node scripts/check-static.mjs",
-    "deploy": "wrangler pages deploy . --project-name dyor-sh --branch main"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name dyor-sh --branch main"
   },
   "devDependencies": {
     "wrangler": "^4.18.0"
