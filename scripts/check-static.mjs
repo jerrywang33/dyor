@@ -7,6 +7,9 @@ const required = [
   "favicon.svg",
   "_headers",
   "_redirects",
+  "functions/_shared/report-store.js",
+  "functions/api/report.js",
+  "functions/api/report/[id].js",
   "functions/api/scan.js",
 ];
 

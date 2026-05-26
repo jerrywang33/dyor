@@ -89,6 +89,9 @@ function escapeHtml(value) {
 function rememberReport(report) {
   try {
     window.localStorage?.setItem(`dyor.report.${report.id}`, JSON.stringify(report));
+    if (report.snapshot?.id) {
+      window.localStorage?.setItem(`dyor.snapshot.${report.snapshot.id}`, JSON.stringify(report));
+    }
   } catch {
     // Local report caching is best-effort only.
   }
@@ -97,6 +100,15 @@ function rememberReport(report) {
 function loadRememberedReport(id) {
   try {
     const raw = window.localStorage?.getItem(`dyor.report.${id}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadRememberedSnapshot(id) {
+  try {
+    const raw = window.localStorage?.getItem(`dyor.snapshot.${id}`);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -176,7 +188,7 @@ async function performScan(value, options = {}) {
     }
 
     const report = await response.json();
-    state.active = normalizeScan(report, query);
+    state.active = await persistReport(normalizeScan(report, query));
     state.query = state.active.label || query;
     rememberReport(state.active);
   } catch (error) {
@@ -190,6 +202,39 @@ async function performScan(value, options = {}) {
       window.history.replaceState({}, "", reportPath(state.active));
     }
     render();
+  }
+}
+
+async function persistReport(report) {
+  if (!report.live || report.snapshot?.persisted) return report;
+
+  try {
+    const response = await fetch("/api/report", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ report }),
+    });
+
+    if (!response.ok) return report;
+
+    const payload = await response.json();
+    if (!payload.persisted || !payload.id) return report;
+
+    return {
+      ...report,
+      snapshot: {
+        id: payload.id,
+        persisted: true,
+        savedAt: payload.savedAt,
+        expiresAt: payload.expiresAt,
+      },
+      shareUrl: payload.url || reportPath({ ...report, snapshot: { id: payload.id, persisted: true } }),
+    };
+  } catch {
+    return report;
   }
 }
 
@@ -220,7 +265,10 @@ function navigate(path) {
 
 function reportPath(scan) {
   const query = scan.links?.baseToken || scan.label || "";
-  const suffix = query ? `?q=${encodeURIComponent(query)}` : "";
+  const params = new URLSearchParams();
+  if (scan.snapshot?.persisted && scan.snapshot.id) params.set("s", scan.snapshot.id);
+  if (query) params.set("q", query);
+  const suffix = params.toString() ? `?${params.toString()}` : "";
   return `/r/${encodeURIComponent(scan.id)}${suffix}`;
 }
 
@@ -577,11 +625,18 @@ function home() {
 
 function reportPage(id) {
   const routeUrl = new URL(window.location.href);
+  const snapshotId = routeUrl.searchParams.get("s");
   const routeQuery = routeUrl.searchParams.get("q");
   const scan =
+    (snapshotId ? loadRememberedSnapshot(snapshotId) : null) ||
     samples.find((sample) => sample.id === id) ||
     loadRememberedReport(id) ||
     (state.active?.id === id ? state.active : null);
+
+  if (!scan && snapshotId) {
+    loadSnapshotReport(id, snapshotId, routeQuery);
+    return reportLoadingPage(id);
+  }
 
   if (!scan && routeQuery) {
     loadRouteReport(id, routeQuery);
@@ -590,6 +645,51 @@ function reportPage(id) {
 
   const displayScan = scan || state.active;
   return reportView(displayScan);
+}
+
+function loadSnapshotReport(id, snapshotId, fallbackQuery) {
+  const requestKey = `${id}:snapshot:${snapshotId}`;
+  if (state.routeRequest === requestKey || state.loading) return;
+
+  state.routeRequest = requestKey;
+  state.loading = true;
+  state.error = "";
+
+  fetch(`/api/report/${encodeURIComponent(snapshotId)}`, {
+    headers: { accept: "application/json" },
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `Snapshot failed with ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((payload) => {
+      const report = normalizeScan(payload.report, fallbackQuery || payload.report?.label || id);
+      state.active = {
+        ...report,
+        snapshot: {
+          id: payload.id || snapshotId,
+          persisted: true,
+          savedAt: payload.savedAt,
+          expiresAt: payload.expiresAt,
+        },
+      };
+      state.query = state.active.label || fallbackQuery || "";
+      state.loading = false;
+      rememberReport(state.active);
+      render();
+    })
+    .catch((error) => {
+      state.loading = false;
+      state.error = error instanceof Error ? error.message : "Report snapshot unavailable";
+      if (fallbackQuery) {
+        performScan(fallbackQuery, { replaceReportRoute: true });
+        return;
+      }
+      render();
+    });
 }
 
 function loadRouteReport(id, query) {
