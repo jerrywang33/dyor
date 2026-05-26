@@ -375,6 +375,12 @@ button {
   background: #181920;
 }
 
+.ghost-btn.copied {
+  border-color: rgba(34, 197, 94, 0.38);
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.1);
+}
+
 .sample-row {
   display: flex;
   flex-wrap: wrap;
@@ -545,6 +551,18 @@ button {
   margin-top: 18px;
 }
 
+.panel-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.panel-actions .ghost-btn {
+  margin-top: 0;
+  padding: 0 10px;
+}
+
 .scan-freshness {
   margin-top: 12px;
   color: var(--faint);
@@ -638,7 +656,7 @@ button {
 
 .compare-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -911,6 +929,12 @@ button {
   display: grid;
   gap: 24px;
   padding-top: 24px;
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .report-card,
@@ -1312,7 +1336,8 @@ button {
 
   .compare-scores,
   .compare-actions,
-  .compare-card-meta {
+  .compare-card-meta,
+  .panel-actions {
     grid-template-columns: 1fr;
   }
 
