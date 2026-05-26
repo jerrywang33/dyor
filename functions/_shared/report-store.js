@@ -117,6 +117,7 @@ function sanitizeReport(value) {
     live: Boolean(value.live),
     source: cleanText(value.source, 80),
     updatedAt: cleanText(value.updatedAt, 40),
+    numbers: cleanNumbers(value.numbers),
     metrics: cleanObject(value.metrics, 12, 160),
     findings: cleanFindings(value.findings),
     evidence: cleanEvidence(value.evidence),
@@ -136,6 +137,16 @@ function cleanObject(value, maxEntries, maxLength) {
       .slice(0, maxEntries)
       .map(([key, item]) => [cleanText(key, 40), cleanText(item, maxLength)])
       .filter(([key]) => key),
+  );
+}
+
+function cleanNumbers(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const allowed = ["liquidityUsd", "volume24h", "pairCount", "priceChange24h", "confidenceScore"];
+  return Object.fromEntries(
+    allowed
+      .map((key) => [key, Number(value[key])])
+      .filter(([, item]) => Number.isFinite(item)),
   );
 }
 

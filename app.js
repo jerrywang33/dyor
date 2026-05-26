@@ -13,6 +13,19 @@ const samples = [
       social: "Narrative accelerating",
       source: "Mixed public signals",
     },
+    numbers: {
+      liquidityUsd: 820000,
+      volume24h: 430000,
+      pairCount: 6,
+      priceChange24h: 8.4,
+      confidenceScore: 68,
+    },
+    confidence: {
+      score: 68,
+      label: "Medium confidence",
+      summary: "Prototype identity has enough public structure for a first-pass report.",
+      reasons: ["Ticker and project references should be verified against canonical links."],
+    },
     findings: [
       ["mid", "Liquidity is active, but the strongest venues are concentrated around a few routing paths."],
       ["high", "Narrative velocity is high enough to make entries sensitive to headline reversals."],
@@ -33,6 +46,19 @@ const samples = [
       unlocks: "No local data",
       social: "Steady mentions",
       source: "Needs source review",
+    },
+    numbers: {
+      liquidityUsd: 390000,
+      volume24h: 180000,
+      pairCount: 4,
+      priceChange24h: 4.1,
+      confidenceScore: 61,
+    },
+    confidence: {
+      score: 61,
+      label: "Medium confidence",
+      summary: "Prototype identity is plausible, but source review remains open.",
+      reasons: ["Contract, website, and social links need a canonical match."],
     },
     findings: [
       ["mid", "The first pass should verify contract address, official links, and token distribution."],
@@ -55,6 +81,19 @@ const samples = [
       social: "No canonical match",
       source: "Contract-first scan",
     },
+    numbers: {
+      liquidityUsd: 0,
+      volume24h: 0,
+      pairCount: 0,
+      priceChange24h: 0,
+      confidenceScore: 24,
+    },
+    confidence: {
+      score: 24,
+      label: "Low confidence",
+      summary: "Contract identity is not verified in the prototype profile.",
+      reasons: ["Explorer verification and canonical project links are required."],
+    },
     findings: [
       ["high", "Contract address lacks a verified project identity in this prototype run."],
       ["high", "Unknown holder concentration should block any automated action."],
@@ -73,6 +112,7 @@ const state = {
   loading: false,
   error: "",
   routeRequest: "",
+  comparison: null,
 };
 
 const app = document.querySelector("#app");
@@ -133,6 +173,29 @@ function normalizeQuery(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function parseCompareQuery(value) {
+  const query = String(value || "").trim();
+  if (!query) return null;
+
+  const match =
+    query.match(/^(.+?)\s+(?:vs\.?|versus)\s+(.+)$/i) ||
+    query.match(/^compare\s+(.+?)\s+(?:with|to|against)\s+(.+)$/i) ||
+    query.match(/^(.+?)\s*[,/|]\s*(.+)$/);
+
+  if (!match) return null;
+
+  const pair = [cleanCompareToken(match[1]), cleanCompareToken(match[2])];
+  return pair[0] && pair[1] ? pair : null;
+}
+
+function cleanCompareToken(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^\$+/, "")
+    .replace(/\s+/g, " ")
+    .slice(0, 80);
+}
+
 function scanFor(value) {
   const query = normalizeQuery(value);
   if (!query) return state.active;
@@ -172,9 +235,16 @@ async function performScan(value, options = {}) {
   const query = String(value || "").trim();
   if (!query) return;
 
+  const comparePair = parseCompareQuery(query);
+  if (comparePair) {
+    await performCompare(comparePair[0], comparePair[1]);
+    return;
+  }
+
   state.query = query;
   state.loading = true;
   state.error = "";
+  state.comparison = null;
   render();
 
   try {
@@ -193,6 +263,7 @@ async function performScan(value, options = {}) {
     rememberReport(state.active);
   } catch (error) {
     state.active = scanFor(query);
+    state.comparison = null;
     state.error = `Live scan unavailable. Showing prototype profile. ${
       error instanceof Error ? error.message : ""
     }`.trim();
@@ -201,6 +272,40 @@ async function performScan(value, options = {}) {
     if (options.replaceReportRoute) {
       window.history.replaceState({}, "", reportPath(state.active));
     }
+    render();
+  }
+}
+
+async function performCompare(leftQuery, rightQuery) {
+  if (state.loading) return;
+
+  state.query = `${leftQuery} vs ${rightQuery}`;
+  state.loading = true;
+  state.error = "";
+  render();
+
+  try {
+    const params = new URLSearchParams({ a: leftQuery, b: rightQuery });
+    const response = await fetch(`/api/compare?${params.toString()}`, {
+      headers: { accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.message || payload.error || `Compare failed with ${response.status}`);
+    }
+
+    state.comparison = normalizeComparison(await response.json(), leftQuery, rightQuery);
+    state.active = state.comparison.left;
+    state.query = state.comparison.label;
+  } catch (error) {
+    state.comparison = compareFor(leftQuery, rightQuery);
+    state.active = state.comparison.left;
+    state.error = `Live compare unavailable. Showing prototype comparison. ${
+      error instanceof Error ? error.message : ""
+    }`.trim();
+  } finally {
+    state.loading = false;
     render();
   }
 }
@@ -256,7 +361,125 @@ function normalizeScan(report, query) {
     watch: Array.isArray(report.watch) ? report.watch : fallback.watch,
     alternatives: Array.isArray(report.alternatives) ? report.alternatives : fallback.alternatives,
     links: report.links && typeof report.links === "object" ? report.links : fallback.links,
+    numbers: report.numbers && typeof report.numbers === "object" ? report.numbers : fallback.numbers,
   };
+}
+
+function normalizeComparison(payload, leftQuery, rightQuery) {
+  const left = normalizeScan(payload.left || {}, leftQuery);
+  const right = normalizeScan(payload.right || {}, rightQuery);
+  return {
+    id: payload.id || `compare-${left.id}-vs-${right.id}`,
+    kind: "compare",
+    label: payload.label || `${left.label} vs ${right.label}`,
+    title: payload.title || `${left.title} vs ${right.title}`,
+    verdict: payload.verdict || compareVerdict(left, right),
+    summary: payload.summary || compareSummary(left, right),
+    source: payload.source || "Dexscreener",
+    updatedAt: payload.updatedAt || new Date().toISOString(),
+    scores: payload.scores && typeof payload.scores === "object" ? payload.scores : compareScores(left, right),
+    left,
+    right,
+    deltas: Array.isArray(payload.deltas) && payload.deltas.length ? payload.deltas : compareDeltas(left, right),
+    findings: Array.isArray(payload.findings) ? payload.findings : [],
+  };
+}
+
+function compareFor(leftQuery, rightQuery) {
+  const left = scanFor(leftQuery);
+  const right = scanFor(rightQuery);
+  return normalizeComparison(
+    {
+      id: `compare-${left.id}-vs-${right.id}`,
+      label: `${left.label} vs ${right.label}`,
+      verdict: compareVerdict(left, right),
+      summary: compareSummary(left, right),
+      source: "Prototype",
+      scores: compareScores(left, right),
+      left,
+      right,
+      deltas: compareDeltas(left, right),
+      findings: [
+        ["mid", "Prototype comparison uses local sample profiles while the live compare API is unavailable."],
+        ["mid", "Run the live scan again before using any conclusion outside this shell."],
+      ],
+    },
+    leftQuery,
+    rightQuery,
+  );
+}
+
+function compareScores(left, right) {
+  const leftScore = comparisonScore(left);
+  const rightScore = comparisonScore(right);
+  const delta = Math.round((leftScore - rightScore) * 10) / 10;
+  return {
+    left: leftScore,
+    right: rightScore,
+    delta,
+    leader: Math.abs(delta) < 4 ? "neutral" : delta > 0 ? "left" : "right",
+  };
+}
+
+function comparisonScore(scan) {
+  const liquidity = numeric(scan.numbers?.liquidityUsd);
+  const pairCount = numeric(scan.numbers?.pairCount);
+  const confidence = numeric(scan.confidence?.score || scan.numbers?.confidenceScore);
+  const liquidityScore = Math.min(20, Math.log10(liquidity + 1) * 2.8);
+  return Math.round(Math.max(0, Math.min(100, (100 - numeric(scan.risk)) * 0.58 + confidence * 0.28 + liquidityScore + Math.min(8, pairCount))) * 10) / 10;
+}
+
+function compareVerdict(left, right) {
+  const scores = compareScores(left, right);
+  if (scores.leader === "neutral") return "No clear research edge";
+  return `${scores.leader === "left" ? left.label : right.label} has the cleaner first-pass profile`;
+}
+
+function compareSummary(left, right) {
+  const scores = compareScores(left, right);
+  if (scores.leader === "neutral") {
+    return `${left.label} and ${right.label} are close on first-pass evidence. Compare the report details before forming a view.`;
+  }
+  const leader = scores.leader === "left" ? left : right;
+  return `${leader.label} leads on the composite research score. Verify contract identity, source links, and missing off-chain data before relying on ticker-level conclusions.`;
+}
+
+function compareDeltas(left, right) {
+  return [
+    compareDelta("Risk score", left.risk, right.risk, "lower"),
+    compareDelta("Identity confidence", left.confidence?.score || left.numbers?.confidenceScore, right.confidence?.score || right.numbers?.confidenceScore, "higher"),
+    compareDelta("Liquidity", left.numbers?.liquidityUsd, right.numbers?.liquidityUsd, "higher", formatMoney),
+    compareDelta("24h volume", left.numbers?.volume24h, right.numbers?.volume24h, "context", formatMoney),
+    compareDelta("Market coverage", left.numbers?.pairCount, right.numbers?.pairCount, "higher", (value) => `${numeric(value)} pool${numeric(value) === 1 ? "" : "s"}`),
+  ];
+}
+
+function compareDelta(label, leftValue, rightValue, bias, formatter = (value) => String(Math.round(numeric(value)))) {
+  const left = numeric(leftValue);
+  const right = numeric(rightValue);
+  const diff = bias === "lower" ? right - left : left - right;
+  return {
+    label,
+    left: formatter(left),
+    right: formatter(right),
+    bias,
+    leader: Math.abs(diff) < 1 ? "neutral" : diff > 0 ? "left" : "right",
+    delta: Math.round(diff * 100) / 100,
+  };
+}
+
+function numeric(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatMoney(value) {
+  const amount = numeric(value);
+  if (!amount) return "$0";
+  return `$${Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: amount < 10_000 ? 2 : 1,
+  }).format(amount)}`;
 }
 
 function navigate(path) {
@@ -328,6 +551,21 @@ function consoleLines(scan) {
   }
 
   return lines.join("");
+}
+
+function comparisonConsoleLines(comparison) {
+  const left = comparison.left;
+  const right = comparison.right;
+  const leader = comparison.scores?.leader === "left" ? left : comparison.scores?.leader === "right" ? right : null;
+  return [
+    `<p><em>$</em> <b>dyor</b> compare <i>${escapeHtml(left.label)}</i> <i>${escapeHtml(right.label)}</i></p>`,
+    `<p><em>></em> resolving both token identities and market sets</p>`,
+    `<p><em>></em> ${escapeHtml(left.label)}: ${escapeHtml(left.chain)} · risk ${escapeHtml(left.risk)}</p>`,
+    `<p><em>></em> ${escapeHtml(right.label)}: ${escapeHtml(right.chain)} · risk ${escapeHtml(right.risk)}</p>`,
+    `<p><em>></em> comparing risk, identity confidence, liquidity, volume, and market coverage</p>`,
+    `<p><em>></em> verdict: <i>${escapeHtml(comparison.verdict)}</i></p>`,
+    `<p><em>></em> ${leader ? `research edge: ${escapeHtml(leader.label)}` : "research edge: no clear leader"}</p>`,
+  ].join("");
 }
 
 function metricRows(scan) {
@@ -412,6 +650,104 @@ function sourceLinkButtons(scan, limit = 4) {
         .join("")}
     </div>
   `;
+}
+
+function comparisonGrid(comparison) {
+  return `
+    <div class="report-grid compare-report-grid">
+      <div class="console" aria-live="polite">${comparisonConsoleLines(comparison)}</div>
+      <aside class="risk-panel compare-panel">
+        <div class="section-head">
+          <span class="kicker">Compare</span>
+          ${comparison.updatedAt ? `<small>${escapeHtml(formatUpdatedAt(comparison.updatedAt))}</small>` : ""}
+        </div>
+        <h3>${escapeHtml(comparison.verdict)}</h3>
+        <p>${escapeHtml(comparison.summary)}</p>
+        <div class="compare-scores">
+          ${scorePill(comparison.left, comparison.scores?.left, "left", comparison.scores?.leader)}
+          ${scorePill(comparison.right, comparison.scores?.right, "right", comparison.scores?.leader)}
+        </div>
+        <div class="compare-actions">
+          <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(comparison.left))}">${escapeHtml(comparison.left.label)} report</button>
+          <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(comparison.right))}">${escapeHtml(comparison.right.label)} report</button>
+        </div>
+      </aside>
+    </div>
+    <div class="compare-detail">
+      <div class="compare-assets">
+        ${compareAssetCard(comparison.left, comparison.scores?.left, "left", comparison.scores?.leader)}
+        ${compareAssetCard(comparison.right, comparison.scores?.right, "right", comparison.scores?.leader)}
+      </div>
+      ${compareDeltaTable(comparison)}
+    </div>
+  `;
+}
+
+function scorePill(scan, score, side, leader) {
+  return `
+    <div class="score-pill ${leader === side ? "active" : ""}">
+      <span>${escapeHtml(scan.label)}</span>
+      <strong>${escapeHtml(score ?? comparisonScore(scan))}</strong>
+    </div>
+  `;
+}
+
+function compareAssetCard(scan, score, side, leader) {
+  const tone = riskTone(scan.risk);
+  return `
+    <article class="compare-card ${leader === side ? "active" : ""}">
+      <div class="compare-card-head">
+        <div>
+          <span>${escapeHtml(scan.chain)}</span>
+          <strong>${escapeHtml(scan.title)}</strong>
+        </div>
+        <div class="score ${tone}" style="--score: ${escapeHtml(scan.risk)}">
+          <span>${escapeHtml(scan.risk)}</span>
+        </div>
+      </div>
+      <div class="compare-card-meta">
+        <span>Composite <strong>${escapeHtml(score ?? comparisonScore(scan))}</strong></span>
+        <span>Confidence <strong>${escapeHtml(scan.confidence?.score ?? scan.numbers?.confidenceScore ?? "?")}</strong></span>
+        <span>Liquidity <strong>${escapeHtml(formatMoney(scan.numbers?.liquidityUsd))}</strong></span>
+      </div>
+      <p>${escapeHtml(scan.verdict)}</p>
+      ${sourceLinkButtons(scan, 3)}
+    </article>
+  `;
+}
+
+function compareDeltaTable(comparison) {
+  const deltas = Array.isArray(comparison.deltas) ? comparison.deltas : [];
+  if (!deltas.length) return "";
+
+  return `
+    <div class="compare-deltas">
+      <div class="compare-delta-head">
+        <span>Signal</span>
+        <span>${escapeHtml(comparison.left.label)}</span>
+        <span>${escapeHtml(comparison.right.label)}</span>
+        <span>Edge</span>
+      </div>
+      ${deltas
+        .map(
+          (item) => `
+            <div class="compare-delta-row ${escapeHtml(item.leader || "neutral")}">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${escapeHtml(item.left)}</strong>
+              <strong>${escapeHtml(item.right)}</strong>
+              <em>${escapeHtml(deltaLeaderLabel(item, comparison))}</em>
+            </div>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function deltaLeaderLabel(item, comparison) {
+  if (item.leader === "left") return comparison.left.label;
+  if (item.leader === "right") return comparison.right.label;
+  return item.bias === "context" ? "Context" : "Even";
 }
 
 function evidenceBlock(scan) {
@@ -554,8 +890,13 @@ function confidenceReasons(confidence) {
 
 function scanPanel() {
   const scan = state.active;
+  const comparison = state.comparison;
   const tone = riskTone(scan.risk);
-  const sourceLabel = scan.live ? `live via ${scan.source || "market API"}` : "prototype profile";
+  const sourceLabel = comparison
+    ? `compare via ${comparison.source || "market API"}`
+    : scan.live
+      ? `live via ${scan.source || "market API"}`
+      : "prototype profile";
   return `
     <div class="terminal ${state.loading ? "loading" : ""}">
       <div class="terminal-top">
@@ -587,30 +928,37 @@ function scanPanel() {
               `<button class="chip" type="button" data-sample="${sample.label}" ${state.loading ? "disabled" : ""}>${sample.label}</button>`,
           )
           .join("")}
+        <button class="chip chip-compare" type="button" data-sample="ASTER vs CLOUD" ${state.loading ? "disabled" : ""}>ASTER vs CLOUD</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
-      <div class="report-grid">
-        <div class="console" aria-live="polite">${consoleLines(scan)}</div>
-        <aside class="risk-panel">
-          <div class="risk-head">
-            <div>
-              <span>Risk Score</span>
-              <strong>${escapeHtml(scan.verdict)}</strong>
+      ${
+        comparison
+          ? comparisonGrid(comparison)
+          : `
+            <div class="report-grid">
+              <div class="console" aria-live="polite">${consoleLines(scan)}</div>
+              <aside class="risk-panel">
+                <div class="risk-head">
+                  <div>
+                    <span>Risk Score</span>
+                    <strong>${escapeHtml(scan.verdict)}</strong>
+                  </div>
+                  <div class="score ${tone}" style="--score: ${scan.risk}">
+                    <span>${scan.risk}</span>
+                  </div>
+                </div>
+                <div class="metric-list">${metricRows(scan)}</div>
+                ${
+                  scan.updatedAt
+                    ? `<div class="scan-freshness">Updated ${escapeHtml(formatUpdatedAt(scan.updatedAt))}</div>`
+                    : ""
+                }
+                ${sourceLinkButtons(scan)}
+                <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(scan))}">Open report</button>
+              </aside>
             </div>
-            <div class="score ${tone}" style="--score: ${scan.risk}">
-              <span>${scan.risk}</span>
-            </div>
-          </div>
-          <div class="metric-list">${metricRows(scan)}</div>
-          ${
-            scan.updatedAt
-              ? `<div class="scan-freshness">Updated ${escapeHtml(formatUpdatedAt(scan.updatedAt))}</div>`
-              : ""
-          }
-          ${sourceLinkButtons(scan)}
-          <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(scan))}">Open report</button>
-        </aside>
-      </div>
+          `
+      }
     </div>
   `;
 }
