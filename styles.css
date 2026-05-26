@@ -86,6 +86,7 @@ button {
   line-height: 1;
   font-size: 15px;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .brand small {

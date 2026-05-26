@@ -144,15 +144,13 @@ function navigate(path) {
 function header() {
   return `
     <header class="topbar">
-      <a class="brand" href="/" data-link aria-label="DYOR.sh home">
+      <a class="brand" href="/" data-link aria-label="AI-Native Research Shell home">
         <span class="brand-mark" aria-hidden="true">🔍</span>
         <span>
-          <strong>dyor.sh</strong>
-          <small>research shell</small>
+          <strong>AI-Native Research Shell</strong>
         </span>
       </a>
       <nav class="nav" aria-label="Primary">
-        <a href="/docs" data-link>Docs</a>
         <a class="nav-icon" href="https://github.com/jerrywang33/dyor" target="_blank" rel="noreferrer" aria-label="GitHub">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.1c-3.34.73-4.04-1.41-4.04-1.41-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48.99.11-.77.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 5.93c1.02.01 2.04.14 3 .41 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/>
@@ -169,7 +167,7 @@ function header() {
 function footer() {
   return `
     <footer class="footer">
-      <span>AI research shell for token due diligence. Not financial advice.</span>
+      <span>AI-Native research shell for token due diligence. Not financial advice.</span>
       <a href="/docs" data-link>Methodology</a>
     </footer>
   `;
@@ -257,7 +255,7 @@ function home() {
         <h1 class="wordmark">dyor.sh</h1>
         <div class="hero-copy">
           <h1>
-            Your AI research shell for <span>crypto risk, evidence, and signals.</span>
+            Your AI-Native research shell for <span>crypto risk, evidence, and signals.</span>
           </h1>
           <p>
             Type a token, contract, project, or social link. The agent turns fragmented market data into a structured research brief.
@@ -383,7 +381,7 @@ function docsPage() {
     <section class="docs">
       <h1>DYOR.sh Docs</h1>
       <p>
-        DYOR.sh is an AI research shell. The goal is to scan crypto assets, surface evidence, explain risk, and keep a watch process running after the first report.
+        DYOR.sh is an AI-Native research shell. The goal is to scan crypto assets, surface evidence, explain risk, and keep a watch process running after the first report.
       </p>
       <div class="doc-card">
         <h2>Commands</h2>

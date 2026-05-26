@@ -1,10 +1,10 @@
 # dyor.sh
 
-AI research shell for crypto token due diligence.
+AI-Native research shell for crypto token due diligence.
 
 ## What it is
 
-DYOR.sh is a frontend prototype for an AI-powered crypto research agent. The first screen is the product surface: enter a token, project, contract, or social link and get a structured research brief with risk posture, evidence buckets, and a shareable report route.
+DYOR.sh is a frontend prototype for an AI-Native crypto research agent. The first screen is the product surface: enter a token, project, contract, or social link and get a structured research brief with risk posture, evidence buckets, and a shareable report route.
 
 This build is intentionally static so it can ship fast on Cloudflare Pages. Live data connectors can be added behind the same shell later.
 

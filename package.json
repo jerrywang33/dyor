@@ -2,7 +2,7 @@
   "name": "dyor-sh",
   "version": "0.1.0",
   "private": true,
-  "description": "AI research shell for crypto token due diligence.",
+  "description": "AI-Native research shell for crypto token due diligence.",
   "scripts": {
     "dev": "wrangler pages dev .",
     "build": "node scripts/check-static.mjs && node scripts/build-dist.mjs",
