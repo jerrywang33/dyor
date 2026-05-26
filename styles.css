@@ -362,6 +362,13 @@ button {
   background: transparent;
 }
 
+.primary-btn:disabled,
+.chip:disabled,
+.scan-shell input:disabled {
+  cursor: progress;
+  opacity: 0.66;
+}
+
 .ghost-btn:hover,
 .chip:hover {
   border-color: var(--line-strong);
@@ -373,6 +380,17 @@ button {
   flex-wrap: wrap;
   gap: 10px;
   padding: 0 18px 16px;
+}
+
+.scan-error {
+  margin: -4px 18px 16px;
+  border: 1px solid rgba(251, 113, 133, 0.26);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fecdd3;
+  background: rgba(251, 113, 133, 0.08);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .chip {

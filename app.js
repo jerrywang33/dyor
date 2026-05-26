@@ -70,6 +70,8 @@ const state = {
   active: defaultScan,
   query: defaultScan.label,
   route: window.location.pathname,
+  loading: false,
+  error: "",
 };
 
 const app = document.querySelector("#app");
@@ -81,6 +83,23 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function rememberReport(report) {
+  try {
+    window.localStorage?.setItem(`dyor.report.${report.id}`, JSON.stringify(report));
+  } catch {
+    // Local report caching is best-effort only.
+  }
+}
+
+function loadRememberedReport(id) {
+  try {
+    const raw = window.localStorage?.getItem(`dyor.report.${id}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 function riskTone(score) {
@@ -134,6 +153,58 @@ function scanFor(value) {
   );
 }
 
+async function performScan(value) {
+  if (state.loading) return;
+
+  const query = String(value || "").trim();
+  if (!query) return;
+
+  state.query = query;
+  state.loading = true;
+  state.error = "";
+  render();
+
+  try {
+    const response = await fetch(`/api/scan?q=${encodeURIComponent(query)}`, {
+      headers: { accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.message || payload.error || `Scan failed with ${response.status}`);
+    }
+
+    const report = await response.json();
+    state.active = normalizeScan(report, query);
+    state.query = state.active.label || query;
+    rememberReport(state.active);
+  } catch (error) {
+    state.active = scanFor(query);
+    state.error = `Live scan unavailable. Showing prototype profile. ${
+      error instanceof Error ? error.message : ""
+    }`.trim();
+  } finally {
+    state.loading = false;
+    render();
+  }
+}
+
+function normalizeScan(report, query) {
+  const fallback = scanFor(query);
+  return {
+    ...fallback,
+    ...report,
+    id: report.id || fallback.id,
+    label: report.label || fallback.label,
+    title: report.title || fallback.title,
+    chain: report.chain || fallback.chain,
+    risk: Number.isFinite(Number(report.risk)) ? Number(report.risk) : fallback.risk,
+    verdict: report.verdict || fallback.verdict,
+    metrics: report.metrics && typeof report.metrics === "object" ? report.metrics : fallback.metrics,
+    findings: Array.isArray(report.findings) && report.findings.length ? report.findings : fallback.findings,
+  };
+}
+
 function navigate(path) {
   window.history.pushState({}, "", path);
   state.route = path;
@@ -175,15 +246,25 @@ function footer() {
 
 function consoleLines(scan) {
   const key = escapeHtml(scan.label);
-  return [
+  const lines = [
     `<p><em>$</em> <b>dyor</b> scan <i>${key}</i></p>`,
     `<p><em>></em> resolving project identity: ${escapeHtml(scan.title)}</p>`,
     `<p><em>></em> chain context: ${escapeHtml(scan.chain)}</p>`,
-    `<p><em>></em> checking pools, holders, unlocks, social velocity</p>`,
+    `<p><em>></em> ${scan.live ? "fetching live DEX pairs and liquidity" : "checking pools, holders, unlocks, social velocity"}</p>`,
     `<p><em>></em> mapping risk factors to evidence buckets</p>`,
     `<p><em>></em> verdict: <i>${escapeHtml(scan.verdict)}</i></p>`,
     `<p><em>></em> report: /r/${escapeHtml(scan.id)}</p>`,
-  ].join("");
+  ];
+
+  if (scan.live) {
+    lines.splice(
+      5,
+      0,
+      `<p><em>></em> source: <i>${escapeHtml(scan.source || "Live data")}</i></p>`,
+    );
+  }
+
+  return lines.join("");
 }
 
 function metricRows(scan) {
@@ -202,13 +283,14 @@ function metricRows(scan) {
 function scanPanel() {
   const scan = state.active;
   const tone = riskTone(scan.risk);
+  const sourceLabel = scan.live ? `live via ${scan.source || "market API"}` : "prototype profile";
   return `
-    <div class="terminal">
+    <div class="terminal ${state.loading ? "loading" : ""}">
       <div class="terminal-top">
         <span class="terminal-dot"></span>
         <span class="terminal-dot"></span>
         <span class="terminal-dot"></span>
-        <small>dyor.sh agent console</small>
+        <small>dyor.sh agent console · ${escapeHtml(sourceLabel)}</small>
       </div>
       <form class="scan-shell" data-scan-form>
         <label>
@@ -219,15 +301,22 @@ function scanPanel() {
             autocomplete="off"
             spellcheck="false"
             aria-label="Token, contract, or project"
+            ${state.loading ? "disabled" : ""}
           />
         </label>
-        <button class="primary-btn" type="submit">Scan</button>
+        <button class="primary-btn" type="submit" ${state.loading ? "disabled" : ""}>
+          ${state.loading ? "Scanning" : "Scan"}
+        </button>
       </form>
       <div class="sample-row">
         ${samples
-          .map((sample) => `<button class="chip" type="button" data-sample="${sample.label}">${sample.label}</button>`)
+          .map(
+            (sample) =>
+              `<button class="chip" type="button" data-sample="${sample.label}" ${state.loading ? "disabled" : ""}>${sample.label}</button>`,
+          )
           .join("")}
       </div>
+      ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       <div class="report-grid">
         <div class="console" aria-live="polite">${consoleLines(scan)}</div>
         <aside class="risk-panel">
@@ -356,7 +445,7 @@ function home() {
 }
 
 function reportPage(id) {
-  const scan = samples.find((sample) => sample.id === id) || state.active;
+  const scan = samples.find((sample) => sample.id === id) || loadRememberedReport(id) || state.active;
   const tone = riskTone(scan.risk);
   return `
     <section class="report-page">
@@ -459,9 +548,7 @@ document.addEventListener("click", (event) => {
 
   const sample = event.target.closest("[data-sample]");
   if (sample) {
-    state.query = sample.dataset.sample;
-    state.active = scanFor(state.query);
-    render();
+    performScan(sample.dataset.sample);
   }
 
   const openReport = event.target.closest("[data-open-report]");
@@ -476,9 +563,7 @@ document.addEventListener("submit", (event) => {
 
   event.preventDefault();
   const data = new FormData(form);
-  state.query = data.get("query") || "";
-  state.active = scanFor(state.query);
-  render();
+  performScan(data.get("query"));
 });
 
 window.addEventListener("popstate", render);

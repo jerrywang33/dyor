@@ -4,7 +4,7 @@
   "private": true,
   "description": "AI-Native research shell for crypto token due diligence.",
   "scripts": {
-    "dev": "wrangler pages dev .",
+    "dev": "npm run build && wrangler pages dev dist",
     "build": "node scripts/check-static.mjs && node scripts/build-dist.mjs",
     "check": "node scripts/check-static.mjs",
     "deploy": "npm run build && wrangler pages deploy dist --project-name dyor-sh --branch main"

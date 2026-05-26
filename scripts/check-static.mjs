@@ -1,6 +1,14 @@
 import { access, readFile } from "node:fs/promises";
 
-const required = ["index.html", "styles.css", "app.js", "favicon.svg", "_headers", "_redirects"];
+const required = [
+  "index.html",
+  "styles.css",
+  "app.js",
+  "favicon.svg",
+  "_headers",
+  "_redirects",
+  "functions/api/scan.js",
+];
 
 await Promise.all(required.map((file) => access(file)));
 
