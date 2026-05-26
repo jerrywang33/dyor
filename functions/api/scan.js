@@ -45,10 +45,11 @@ function cleanQuery(value) {
 
 async function scanDexscreener(query) {
   const pairs = await fetchPairs(query);
-  const selected = pairs
-    .filter((pair) => pair?.baseToken?.symbol || pair?.baseToken?.name)
-    .sort(comparePairs)
-    .slice(0, 10);
+  const group = selectPairGroup(
+    pairs.filter((pair) => pair?.baseToken?.symbol || pair?.baseToken?.name),
+    query,
+  );
+  const selected = group.pairs.sort(comparePairs).slice(0, 10);
 
   if (!selected.length) {
     throw new Error("No DEX pairs matched this query");
@@ -57,7 +58,7 @@ async function scanDexscreener(query) {
   const best = selected[0];
   const liquidityUsd = sum(selected, (pair) => number(pair?.liquidity?.usd));
   const volume24h = sum(selected, (pair) => number(pair?.volume?.h24));
-  const pairCount = pairs.length;
+  const pairCount = group.pairs.length;
   const priceChange24h = number(best?.priceChange?.h24);
   const risk = scoreRisk({ liquidityUsd, volume24h, pairCount, priceChange24h });
   const base = best.baseToken || {};
@@ -119,6 +120,71 @@ function comparePairs(a, b) {
     number(b?.liquidity?.usd) - number(a?.liquidity?.usd) ||
     number(b?.volume?.h24) - number(a?.volume?.h24)
   );
+}
+
+function selectPairGroup(pairs, query) {
+  const groups = new Map();
+
+  for (const pair of pairs) {
+    const key = groupKey(pair);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(pair);
+  }
+
+  return [...groups.values()]
+    .map((groupPairs) => ({
+      pairs: groupPairs,
+      identity: identityScore(groupPairs, query),
+      liquidityUsd: sum(groupPairs, (pair) => number(pair?.liquidity?.usd)),
+      volume24h: sum(groupPairs, (pair) => number(pair?.volume?.h24)),
+    }))
+    .sort(
+      (a, b) =>
+        b.identity - a.identity ||
+        Math.min(b.pairs.length, 20) - Math.min(a.pairs.length, 20) ||
+        b.liquidityUsd - a.liquidityUsd ||
+        b.volume24h - a.volume24h,
+    )[0] || { pairs: [] };
+}
+
+function groupKey(pair) {
+  const chain = pair?.chainId || "unknown";
+  const address = pair?.baseToken?.address || pair?.pairAddress || `${pair?.baseToken?.symbol}-${pair?.baseToken?.name}`;
+  return `${chain}:${String(address).toLowerCase()}`;
+}
+
+function identityScore(pairs, query) {
+  const normalizedQuery = normalizeIdentity(query);
+  const isAddress = isAddressLike(query);
+  const nativeChains = {
+    avax: ["avalanche"],
+    bnb: ["bsc"],
+    eth: ["ethereum"],
+    matic: ["polygon"],
+    sol: ["solana"],
+    sui: ["sui"],
+  };
+  let score = 0;
+
+  for (const pair of pairs) {
+    let pairScore = 0;
+    const chain = normalizeIdentity(pair?.chainId);
+    const symbol = normalizeIdentity(pair?.baseToken?.symbol);
+    const name = normalizeIdentity(pair?.baseToken?.name);
+    const baseAddress = normalizeIdentity(pair?.baseToken?.address);
+    const pairAddress = normalizeIdentity(pair?.pairAddress);
+
+    if (isAddress && (baseAddress === normalizedQuery || pairAddress === normalizedQuery)) pairScore += 100;
+    if (nativeChains[normalizedQuery]?.includes(chain)) pairScore += 80;
+    if (symbol === normalizedQuery) pairScore += 60;
+    else if (symbol && (symbol.startsWith(normalizedQuery) || normalizedQuery.startsWith(symbol))) pairScore += 12;
+    if (name === normalizedQuery) pairScore += 35;
+    else if (name.includes(normalizedQuery)) pairScore += 5;
+
+    score = Math.max(score, pairScore);
+  }
+
+  return score;
 }
 
 function buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, priceChange24h }) {
@@ -236,6 +302,13 @@ function titleCase(value) {
   return String(value)
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function normalizeIdentity(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
 }
 
 function isAddressLike(query) {
