@@ -252,6 +252,9 @@ function normalizeScan(report, query) {
     metrics: report.metrics && typeof report.metrics === "object" ? report.metrics : fallback.metrics,
     findings: Array.isArray(report.findings) && report.findings.length ? report.findings : fallback.findings,
     evidence: report.evidence && typeof report.evidence === "object" ? report.evidence : fallback.evidence,
+    confidence: report.confidence && typeof report.confidence === "object" ? report.confidence : fallback.confidence,
+    watch: Array.isArray(report.watch) ? report.watch : fallback.watch,
+    alternatives: Array.isArray(report.alternatives) ? report.alternatives : fallback.alternatives,
     links: report.links && typeof report.links === "object" ? report.links : fallback.links,
   };
 }
@@ -450,6 +453,102 @@ function evidenceBlock(scan) {
       <div class="evidence-grid">${groups}</div>
       ${sourceLinkButtons(scan, 6)}
     </section>
+  `;
+}
+
+function researchQualityBlock(scan) {
+  const hasConfidence = scan.confidence && typeof scan.confidence === "object";
+  const watch = Array.isArray(scan.watch) ? scan.watch : [];
+  const alternatives = Array.isArray(scan.alternatives) ? scan.alternatives : [];
+
+  if (!hasConfidence && !watch.length && !alternatives.length) return "";
+
+  return `
+    <section class="quality-panel">
+      <div class="section-head">
+        <span class="kicker">Research Quality</span>
+        ${hasConfidence ? `<small>${escapeHtml(scan.confidence.label || "Identity confidence")}</small>` : ""}
+      </div>
+      <div class="quality-grid">
+        ${
+          hasConfidence
+            ? `
+              <article class="quality-card confidence-card">
+                <div class="quality-score">${escapeHtml(scan.confidence.score ?? "?")}</div>
+                <div>
+                  <h3>${escapeHtml(scan.confidence.label || "Identity confidence")}</h3>
+                  <p>${escapeHtml(scan.confidence.summary || "")}</p>
+                </div>
+              </article>
+            `
+            : ""
+        }
+        ${watchBlock(watch)}
+        ${alternativesBlock(alternatives)}
+      </div>
+      ${confidenceReasons(scan.confidence)}
+    </section>
+  `;
+}
+
+function watchBlock(items) {
+  if (!items.length) return "";
+
+  return `
+    <article class="quality-card list-card">
+      <h3>Watch Triggers</h3>
+      <div class="watch-list">
+        ${items
+          .map(
+            (item) => `
+              <div class="watch-row" style="--tone: ${toneColor(item.tone || "mid")}">
+                <div>
+                  <strong>${escapeHtml(item.label || "Trigger")}</strong>
+                  <span>${escapeHtml(item.detail || "")}</span>
+                </div>
+                <em>${escapeHtml(item.value || "")}</em>
+              </div>
+            `,
+          )
+          .join("")}
+      </div>
+    </article>
+  `;
+}
+
+function alternativesBlock(items) {
+  if (!items.length) return "";
+
+  return `
+    <article class="quality-card list-card">
+      <h3>Other Matches</h3>
+      <div class="alt-list">
+        ${items
+          .map(
+            (item) => `
+              <a class="alt-row" href="${escapeHtml(safeExternalUrl(item.url) || "#")}" target="_blank" rel="noreferrer">
+                <span>
+                  <strong>${escapeHtml(item.label || "Token")}</strong>
+                  <small>${escapeHtml(item.title || "")} · ${escapeHtml(item.chain || "Unknown chain")}</small>
+                </span>
+                <em>${escapeHtml(item.liquidity || "")}</em>
+              </a>
+            `,
+          )
+          .join("")}
+      </div>
+    </article>
+  `;
+}
+
+function confidenceReasons(confidence) {
+  const reasons = Array.isArray(confidence?.reasons) ? confidence.reasons : [];
+  if (!reasons.length) return "";
+
+  return `
+    <div class="confidence-reasons">
+      ${reasons.map((reason) => `<span>${escapeHtml(reason)}</span>`).join("")}
+    </div>
   `;
 }
 
@@ -747,6 +846,7 @@ function reportView(scan) {
           </div>
           <div class="metric-list">${metricRows(scan)}</div>
           ${evidenceBlock(scan)}
+          ${researchQualityBlock(scan)}
           <h2>Findings</h2>
           <div class="finding-list">
             ${scan.findings

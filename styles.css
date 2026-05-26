@@ -818,6 +818,139 @@ button {
   font-weight: 600;
 }
 
+.quality-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+
+.quality-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.quality-card {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.confidence-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+}
+
+.quality-score {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--cyan);
+  background: rgba(103, 232, 249, 0.07);
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.quality-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.quality-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.list-card {
+  padding: 16px;
+}
+
+.list-card h3 {
+  margin-bottom: 12px;
+}
+
+.watch-list,
+.alt-list {
+  display: grid;
+  gap: 10px;
+}
+
+.watch-row {
+  border-left: 3px solid var(--tone);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  padding-left: 12px;
+}
+
+.watch-row strong,
+.alt-row strong {
+  display: block;
+  color: var(--soft);
+  font-size: 13px;
+}
+
+.watch-row span,
+.alt-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.watch-row em,
+.alt-row em {
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.alt-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  padding-top: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.alt-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.alt-row:hover strong {
+  color: var(--cyan);
+}
+
+.confidence-reasons {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.confidence-reasons span {
+  border-left: 3px solid rgba(103, 232, 249, 0.45);
+  padding-left: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .finding-list {
   display: grid;
   gap: 12px;
@@ -886,6 +1019,10 @@ button {
   }
 
   .evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quality-grid {
     grid-template-columns: 1fr;
   }
 

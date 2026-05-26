@@ -120,6 +120,9 @@ function sanitizeReport(value) {
     metrics: cleanObject(value.metrics, 12, 160),
     findings: cleanFindings(value.findings),
     evidence: cleanEvidence(value.evidence),
+    confidence: cleanConfidence(value.confidence),
+    watch: cleanWatch(value.watch),
+    alternatives: cleanAlternatives(value.alternatives),
     links: cleanLinks(value.links),
   };
 
@@ -155,6 +158,47 @@ function cleanEvidence(value) {
     market: cleanRows(value.market),
     links: cleanEvidenceLinks(value.links),
   };
+}
+
+function cleanConfidence(value) {
+  if (!value || typeof value !== "object") return null;
+  return {
+    score: clamp(Number(value.score), 0, 100),
+    label: cleanText(value.label, 80),
+    summary: cleanText(value.summary, 240),
+    reasons: Array.isArray(value.reasons) ? value.reasons.slice(0, 8).map((item) => cleanText(item, 240)).filter(Boolean) : [],
+  };
+}
+
+function cleanWatch(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, 12)
+    .map((item) => ({
+      tone: cleanTone(item?.tone),
+      label: cleanText(item?.label, 80),
+      value: cleanText(item?.value, 80),
+      detail: cleanText(item?.detail, 260),
+    }))
+    .filter((item) => item.label || item.detail);
+}
+
+function cleanAlternatives(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, 8)
+    .map((item) => ({
+      label: cleanText(item?.label, 80),
+      title: cleanText(item?.title, 140),
+      chain: cleanText(item?.chain, 80),
+      liquidity: cleanText(item?.liquidity, 80),
+      volume: cleanText(item?.volume, 80),
+      pairs: clamp(Number(item?.pairs), 0, 999),
+      source: cleanText(item?.source, 80),
+      url: cleanUrl(item?.url),
+      address: cleanText(item?.address, 160),
+    }))
+    .filter((item) => item.label || item.address);
 }
 
 function cleanRows(value) {

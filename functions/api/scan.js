@@ -45,10 +45,11 @@ function cleanQuery(value) {
 
 async function scanDexscreener(query) {
   const pairs = await fetchPairs(query);
-  const group = selectPairGroup(
+  const groups = rankPairGroups(
     pairs.filter((pair) => pair?.baseToken?.symbol || pair?.baseToken?.name),
     query,
   );
+  const group = groups[0] || { pairs: [] };
   const selected = group.pairs.sort(comparePairs).slice(0, 10);
 
   if (!selected.length) {
@@ -67,6 +68,16 @@ async function scanDexscreener(query) {
   const title = base.name || symbol;
   const id = slug(`${symbol}-${best.chainId || "chain"}`);
   const links = buildLinks(best, base);
+  const alternatives = buildAlternatives(groups.slice(1, 5));
+  const confidence = buildConfidence({
+    query,
+    best,
+    group,
+    links,
+    alternatives,
+    pairCount,
+    liquidityUsd,
+  });
 
   return {
     id,
@@ -88,6 +99,9 @@ async function scanDexscreener(query) {
     },
     findings: buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, priceChange24h }),
     evidence: buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume24h }),
+    confidence,
+    watch: buildWatch({ best, links, liquidityUsd, volume24h, pairCount, priceChange24h }),
+    alternatives,
     links,
   };
 }
@@ -120,7 +134,7 @@ function comparePairs(a, b) {
   );
 }
 
-function selectPairGroup(pairs, query) {
+function rankPairGroups(pairs, query) {
   const groups = new Map();
 
   for (const pair of pairs) {
@@ -131,7 +145,7 @@ function selectPairGroup(pairs, query) {
 
   return [...groups.values()]
     .map((groupPairs) => ({
-      pairs: groupPairs,
+      pairs: groupPairs.sort(comparePairs),
       identity: identityScore(groupPairs, query),
       liquidityUsd: sum(groupPairs, (pair) => number(pair?.liquidity?.usd)),
       volume24h: sum(groupPairs, (pair) => number(pair?.volume?.h24)),
@@ -142,7 +156,7 @@ function selectPairGroup(pairs, query) {
         Math.min(b.pairs.length, 20) - Math.min(a.pairs.length, 20) ||
         b.liquidityUsd - a.liquidityUsd ||
         b.volume24h - a.volume24h,
-    )[0] || { pairs: [] };
+    );
 }
 
 function groupKey(pair) {
@@ -250,6 +264,157 @@ function buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume2
       .filter(([, value]) => typeof value === "string" && value.startsWith("http"))
       .map(([label, url]) => ({ label: titleCase(label), url })),
   };
+}
+
+function buildConfidence({ query, best, group, links, alternatives, pairCount, liquidityUsd }) {
+  const base = best.baseToken || {};
+  const normalizedQuery = normalizeIdentity(query);
+  const symbol = normalizeIdentity(base.symbol);
+  const name = normalizeIdentity(base.name);
+  const addressMatch = isAddressLike(query) && normalizeIdentity(base.address) === normalizedQuery;
+  const exactSymbol = symbol && symbol === normalizedQuery;
+  const exactName = name && name === normalizedQuery;
+  const sameSymbolAlternatives = alternatives.filter(
+    (item) => normalizeIdentity(item.label) === symbol && item.chain !== formatChain(best.chainId),
+  );
+  const reasons = [];
+  let score = 38;
+
+  if (addressMatch) {
+    score += 32;
+    reasons.push("Contract address maps directly to the selected base token.");
+  } else if (exactSymbol || exactName) {
+    score += 20;
+    reasons.push("Ticker or project name exactly matches the selected token group.");
+  } else if (group.identity >= 40) {
+    score += 12;
+    reasons.push("Query partially matches the selected token group.");
+  }
+
+  if (links.website) {
+    score += 9;
+    reasons.push("Dexscreener includes a project website source link.");
+  } else {
+    score -= 8;
+    reasons.push("No canonical website was reported by the selected DEX profile.");
+  }
+
+  if (links.x || links.telegram || links.discord) {
+    score += 6;
+    reasons.push("Social source links are available for follow-up.");
+  }
+
+  if (pairCount >= 6) {
+    score += 10;
+    reasons.push(`${pairCount} matched pools support the selected market identity.`);
+  } else if (pairCount <= 1) {
+    score -= 9;
+    reasons.push("Only one matched pool supports this identity, so confirmation is thin.");
+  }
+
+  if (liquidityUsd >= 1_000_000) {
+    score += 7;
+    reasons.push("The selected market set has more than $1M in liquidity.");
+  }
+
+  if (sameSymbolAlternatives.length) {
+    score -= Math.min(18, sameSymbolAlternatives.length * 6);
+    reasons.push(`${sameSymbolAlternatives.length} same-symbol alternative should be checked before relying on ticker alone.`);
+  } else if (alternatives.length) {
+    score -= Math.min(8, alternatives.length * 2);
+    reasons.push("Other search candidates exist; verify the token address before sharing.");
+  }
+
+  const finalScore = clamp(Math.round(score), 8, 96);
+  return {
+    score: finalScore,
+    label: finalScore >= 78 ? "High confidence" : finalScore >= 55 ? "Medium confidence" : "Low confidence",
+    summary:
+      finalScore >= 78
+        ? "Selected token identity is well supported by live DEX evidence."
+        : finalScore >= 55
+          ? "Selected token identity is plausible but still needs source checks."
+          : "Selected token identity is weak; verify contract and canonical links.",
+    reasons: reasons.slice(0, 5),
+  };
+}
+
+function buildWatch({ best, links, liquidityUsd, volume24h, pairCount, priceChange24h }) {
+  const volumeToLiquidity = liquidityUsd > 0 ? volume24h / liquidityUsd : 0;
+  const rows = [];
+
+  rows.push({
+    tone: liquidityUsd < 250_000 ? "mid" : "low",
+    label: "Liquidity floor",
+    value: money(liquidityUsd),
+    detail:
+      liquidityUsd < 250_000
+        ? "Pool depth is shallow enough that modest withdrawals can change execution quality."
+        : "Current matched liquidity is usable, but depth should be watched for withdrawals.",
+  });
+
+  rows.push({
+    tone: volumeToLiquidity > 4 ? "mid" : "low",
+    label: "Flow pressure",
+    value: `${volumeToLiquidity.toFixed(2)}x`,
+    detail:
+      volumeToLiquidity > 4
+        ? "24h volume is high relative to liquidity, which can amplify slippage and reversals."
+        : "24h volume is not unusually high relative to matched liquidity.",
+  });
+
+  rows.push({
+    tone: Math.abs(priceChange24h) >= 12 ? "mid" : "low",
+    label: "24h price move",
+    value: percent(priceChange24h),
+    detail:
+      Math.abs(priceChange24h) >= 12
+        ? "Recent move is large enough to require news and liquidity context."
+        : "Recent move is not the main risk flag in this scan.",
+  });
+
+  rows.push({
+    tone: pairCount <= 1 ? "mid" : "low",
+    label: "Market coverage",
+    value: `${pairCount} pool${pairCount === 1 ? "" : "s"}`,
+    detail:
+      pairCount <= 1
+        ? "Single-pool discovery should be treated as fragile until more venues confirm it."
+        : "Multiple matched pools reduce, but do not remove, market-structure uncertainty.",
+  });
+
+  rows.push({
+    tone: links.website && (links.x || links.telegram || links.discord) ? "low" : "mid",
+    label: "Source follow-up",
+    value: best.dexId || "DEX",
+    detail:
+      links.website && (links.x || links.telegram || links.discord)
+        ? "Review website and social links against the token contract before trusting identity."
+        : "Canonical source links are incomplete; use contract-first verification.",
+  });
+
+  return rows;
+}
+
+function buildAlternatives(groups) {
+  return groups
+    .map((group) => {
+      const best = group.pairs[0] || {};
+      const base = best.baseToken || {};
+      return {
+        label: base.symbol || "UNKNOWN",
+        title: base.name || base.symbol || "Unknown token",
+        chain: formatChain(best.chainId),
+        liquidity: money(group.liquidityUsd),
+        volume: `${money(group.volume24h)} 24h`,
+        pairs: group.pairs.length,
+        source: best.dexId || "DEX",
+        url: safeUrl(best.url),
+        address: base.address || "",
+      };
+    })
+    .filter((item) => item.label !== "UNKNOWN" || item.address)
+    .slice(0, 4);
 }
 
 function buildLinks(best, base) {
