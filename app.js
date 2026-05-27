@@ -2066,6 +2066,8 @@ function docsPage() {
         <h2>Agent API</h2>
         <div class="flow">
           <article class="flow-step"><code>/api/capabilities</code><span>Machine-readable command and endpoint manifest.</span></article>
+          <article class="flow-step"><code>/openapi.json</code><span>OpenAPI schema for tools that prefer typed endpoint definitions.</span></article>
+          <article class="flow-step"><code>/llms.txt</code><span>Short LLM-readable project guide with commands and API examples.</span></article>
           <article class="flow-step"><code>/api/scan?q=ASTER</code><span>Live JSON research report with evidence, red flags, and watch triggers.</span></article>
           <article class="flow-step"><code>/api/brief?q=ASTER&format=md</code><span>Markdown report brief for agents, bots, docs, and notebooks.</span></article>
           <article class="flow-step"><code>/api/watch?q=ASTER,CLOUD</code><span>Batch refresh watched tokens with per-item success or failure.</span></article>

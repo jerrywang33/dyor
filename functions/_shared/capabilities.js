@@ -7,6 +7,8 @@ export function dyorCapabilities(origin = "https://dyor.sh") {
     version: "0.1.0",
     description: "Crypto token research shell for evidence-first market, identity, risk, red flag, watch, compare, and Markdown brief workflows.",
     homepage: baseUrl,
+    openapi: `${baseUrl}/openapi.json`,
+    llms: `${baseUrl}/llms.txt`,
     disclaimer: "Not financial advice. Outputs are research briefs and unresolved-risk checklists, not buy or sell calls.",
     commands: [
       {

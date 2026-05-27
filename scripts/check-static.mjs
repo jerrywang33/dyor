@@ -5,6 +5,8 @@ const required = [
   "styles.css",
   "app.js",
   "favicon.svg",
+  "openapi.json",
+  "llms.txt",
   "_headers",
   "_redirects",
   "functions/_shared/brief.js",

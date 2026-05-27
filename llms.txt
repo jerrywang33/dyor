@@ -1,0 +1,34 @@
+# DYOR.sh
+
+DYOR.sh is an AI-Native crypto research shell for token due diligence. It returns research briefs, unresolved risk checks, source links, watch triggers, and comparison summaries. It does not provide financial advice, price targets, or buy/sell calls.
+
+## Primary URLs
+
+- Home: https://dyor.sh/
+- Docs: https://dyor.sh/docs
+- Capabilities manifest: https://dyor.sh/api/capabilities
+- OpenAPI schema: https://dyor.sh/openapi.json
+- Markdown brief example: https://dyor.sh/api/brief?q=ASTER&format=md
+
+## Commands
+
+- `/scan ASTER`: resolve a token, contract, project, Dexscreener URL, or explorer URL into a structured report.
+- `/redflags ASTER`: focus on unresolved risks and what would reduce them.
+- `/watch ASTER`: scan and pin a token into the local research queue.
+- `/compare ASTER CLOUD`: compare two projects by risk, identity confidence, liquidity, volume, and market coverage.
+
+## API Endpoints
+
+- `GET /api/scan?q=ASTER`: JSON research report.
+- `POST /api/scan` with `{ "q": "ASTER" }`: JSON research report.
+- `GET /api/compare?a=ASTER&b=CLOUD`: JSON comparison.
+- `GET /api/watch?q=ASTER,CLOUD`: batch watch refresh.
+- `POST /api/watch` with `{ "items": [{ "id": "aster", "label": "ASTER", "query": "ASTER" }] }`: batch watch refresh.
+- `GET /api/brief?q=ASTER&format=md`: Markdown research report.
+- `GET /api/brief?a=ASTER&b=CLOUD&format=md`: Markdown comparison brief.
+- `GET /api/capabilities`: machine-readable commands and endpoints.
+- `GET /api/manifest`: alias for `/api/capabilities`.
+
+## Data Notes
+
+The current live connector is Dexscreener. Reports include market evidence, chain explorer links, identity confidence, structured red flags, watch triggers, alternatives, and source links when available. Holder distribution, unlock schedules, contract verification, and deeper social checks are planned follow-up connectors.

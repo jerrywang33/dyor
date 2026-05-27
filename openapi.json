@@ -1,0 +1,570 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DYOR.sh API",
+    "version": "0.1.0",
+    "description": "AI-Native crypto research shell API for token scans, red flags, comparisons, watch refreshes, and Markdown briefs. Not financial advice."
+  },
+  "servers": [
+    {
+      "url": "https://dyor.sh"
+    }
+  ],
+  "paths": {
+    "/api/scan": {
+      "get": {
+        "summary": "Run a live token research scan",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER", "/redflags ASTER", "https://dexscreener.com/bsc/..."]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Research report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Run a live token research scan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string",
+                    "examples": ["ASTER"]
+                  },
+                  "query": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  },
+                  "contract": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Research report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/compare": {
+      "get": {
+        "summary": "Compare two token research reports",
+        "parameters": [
+          {
+            "name": "a",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER"]
+            }
+          },
+          {
+            "name": "b",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["CLOUD"]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER vs CLOUD"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comparison report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comparison"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Compare two token research reports",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "a": {
+                    "type": "string"
+                  },
+                  "b": {
+                    "type": "string"
+                  },
+                  "q": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comparison report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comparison"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watch": {
+      "get": {
+        "summary": "Batch refresh watched token reports",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER,CLOUD"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watch refresh result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchRefresh"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Batch refresh watched token reports",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/WatchQuery"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Watch refresh result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchRefresh"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/brief": {
+      "get": {
+        "summary": "Generate a Markdown or JSON research brief",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER", "ASTER vs CLOUD"]
+            }
+          },
+          {
+            "name": "a",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "b",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "md", "markdown"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Brief response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brief"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/capabilities": {
+      "get": {
+        "summary": "Return machine-readable API capabilities",
+        "responses": {
+          "200": {
+            "description": "Capabilities manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/manifest": {
+      "get": {
+        "summary": "Alias for /api/capabilities",
+        "responses": {
+          "200": {
+            "description": "Capabilities manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/report": {
+      "post": {
+        "summary": "Persist a shareable report snapshot when KV is configured",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "report": {
+                    "$ref": "#/components/schemas/Report"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Snapshot metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/report/{id}": {
+      "get": {
+        "summary": "Read a report snapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Report": {
+        "type": "object",
+        "required": ["id", "label", "title", "chain", "risk", "verdict"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "number"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "numbers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "redFlags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RedFlag"
+            }
+          },
+          "confidence": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "watch": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "links": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RedFlag": {
+        "type": "object",
+        "properties": {
+          "tone": {
+            "type": "string",
+            "enum": ["low", "mid", "high"]
+          },
+          "label": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        }
+      },
+      "Comparison": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "compare"
+          },
+          "label": {
+            "type": "string"
+          },
+          "scores": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "left": {
+            "$ref": "#/components/schemas/Report"
+          },
+          "right": {
+            "$ref": "#/components/schemas/Report"
+          },
+          "deltas": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "WatchQuery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          }
+        }
+      },
+      "WatchRefresh": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "watch"
+          },
+          "count": {
+            "type": "number"
+          },
+          "failures": {
+            "type": "number"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "Brief": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "brief"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["scan", "compare"]
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "report": {
+            "$ref": "#/components/schemas/Report"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/Comparison"
+          }
+        }
+      }
+    }
+  }
+}
