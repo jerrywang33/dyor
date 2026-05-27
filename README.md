@@ -25,6 +25,10 @@ source .env.cloudflare.local
 npm run deploy
 ```
 
+## License
+
+DYOR.sh is released under the MIT License. See [LICENSE](./LICENSE).
+
 ## Harness path
 
 Harness is a good second-stage fit once the project needs approval gates, preview environments, rollback policy, environment-scoped secrets, and production deploy governance. The MVP uses direct Cloudflare Pages deployment to keep the first release small.
