@@ -2063,6 +2063,15 @@ function docsPage() {
         </div>
       </div>
       <div class="doc-card">
+        <h2>Agent API</h2>
+        <div class="flow">
+          <article class="flow-step"><code>/api/capabilities</code><span>Machine-readable command and endpoint manifest.</span></article>
+          <article class="flow-step"><code>/api/scan?q=ASTER</code><span>Live JSON research report with evidence, red flags, and watch triggers.</span></article>
+          <article class="flow-step"><code>/api/brief?q=ASTER&format=md</code><span>Markdown report brief for agents, bots, docs, and notebooks.</span></article>
+          <article class="flow-step"><code>/api/watch?q=ASTER,CLOUD</code><span>Batch refresh watched tokens with per-item success or failure.</span></article>
+        </div>
+      </div>
+      <div class="doc-card">
         <h2>Method</h2>
         <div>
           <p>
