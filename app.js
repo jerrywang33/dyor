@@ -883,6 +883,24 @@ function comparisonPath(comparison) {
   return `/c/${encodeURIComponent(comparison.id || "compare")}${suffix}`;
 }
 
+function briefPath(scan) {
+  const params = new URLSearchParams();
+  const query = scan.links?.baseToken || scan.label || "";
+  if (query) params.set("q", query);
+  params.set("format", "md");
+  return `/api/brief?${params.toString()}`;
+}
+
+function comparisonBriefPath(comparison) {
+  const params = new URLSearchParams();
+  const left = comparison.left?.links?.baseToken || comparison.left?.label || "";
+  const right = comparison.right?.links?.baseToken || comparison.right?.label || "";
+  if (left) params.set("a", left);
+  if (right) params.set("b", right);
+  params.set("format", "md");
+  return `/api/brief?${params.toString()}`;
+}
+
 function header() {
   return `
     <header class="topbar">
@@ -1595,6 +1613,7 @@ function scanPanel() {
                 <div class="panel-actions">
                   <button class="ghost-btn" type="button" data-open-report="${escapeHtml(reportPath(scan))}">Open report</button>
                   <button class="ghost-btn" type="button" data-copy-report="${escapeHtml(scan.id)}">Copy brief</button>
+                  <a class="ghost-btn" href="${escapeHtml(briefPath(scan))}" target="_blank" rel="noreferrer">API brief</a>
                   ${watchButton(scan)}
                 </div>
               </aside>
@@ -1935,6 +1954,7 @@ function compareView(comparison) {
       <div class="page-actions">
         <a class="ghost-btn" href="/" data-link>Back to shell</a>
         <button class="ghost-btn" type="button" data-copy-compare="${escapeHtml(comparison.id)}">Copy brief</button>
+        <a class="ghost-btn" href="${escapeHtml(comparisonBriefPath(comparison))}" target="_blank" rel="noreferrer">API brief</a>
       </div>
       <div class="report-card">
         <div class="report-card-head">
@@ -1980,6 +2000,7 @@ function reportView(scan) {
       <div class="page-actions">
         <a class="ghost-btn" href="/" data-link>Back to shell</a>
         <button class="ghost-btn" type="button" data-copy-report="${escapeHtml(scan.id)}">Copy brief</button>
+        <a class="ghost-btn" href="${escapeHtml(briefPath(scan))}" target="_blank" rel="noreferrer">API brief</a>
         ${watchButton(scan)}
       </div>
       <div class="report-card">
