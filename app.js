@@ -1712,6 +1712,10 @@ function home() {
               <span><strong>0</strong> buy or sell calls</span>
               <span><strong>24/7</strong> watch triggers</span>
             </div>
+            <div class="release-strip" aria-label="Release status">
+              <span><strong>v0.1 live</strong> Cloudflare Pages + Functions</span>
+              <span><strong>Dexscreener</strong> first live connector</span>
+            </div>
           </div>
           <div class="hero-product">
             ${scanPanel()}
@@ -2053,6 +2057,14 @@ function docsPage() {
       <p>
         DYOR.sh is an AI-Native research shell. The goal is to scan crypto assets, surface evidence, explain risk, and keep a watch process running after the first report.
       </p>
+      <div class="doc-card">
+        <h2>Status</h2>
+        <div class="flow">
+          <article class="flow-step"><code>v0.1</code><span>MVP is live on Cloudflare Pages with Pages Functions.</span></article>
+          <article class="flow-step"><code>Dexscreener</code><span>Current connector for pairs, liquidity, volume, source links, and market structure.</span></article>
+          <article class="flow-step"><code>Next</code><span>Holder distribution, unlock schedules, contract verification, and deeper source/social checks.</span></article>
+        </div>
+      </div>
       <div class="doc-card">
         <h2>Commands</h2>
         <div class="flow">

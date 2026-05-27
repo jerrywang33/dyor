@@ -2,6 +2,8 @@
 
 DYOR.sh is an AI-Native crypto research shell for token due diligence. It returns research briefs, unresolved risk checks, source links, watch triggers, and comparison summaries. It does not provide financial advice, price targets, or buy/sell calls.
 
+Status: MVP v0.1 is live on Cloudflare Pages with Pages Functions. The first live connector is Dexscreener.
+
 ## Primary URLs
 
 - Home: https://dyor.sh/
