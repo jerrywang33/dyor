@@ -23,6 +23,8 @@ DYOR.sh is an AI-Native crypto research shell for token due diligence. It return
 
 - `GET /api/scan?q=ASTER`: JSON research report.
 - `POST /api/scan` with `{ "q": "ASTER" }`: JSON research report.
+- `GET /api/redflags?q=ASTER`: compact JSON red flag checklist.
+- `GET /api/redflags?q=ASTER&format=md`: Markdown red flag checklist.
 - `GET /api/compare?a=ASTER&b=CLOUD`: JSON comparison.
 - `GET /api/watch?q=ASTER,CLOUD`: batch watch refresh.
 - `POST /api/watch` with `{ "items": [{ "id": "aster", "label": "ASTER", "query": "ASTER" }] }`: batch watch refresh.

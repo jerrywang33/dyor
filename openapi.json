@@ -79,6 +79,91 @@
         }
       }
     },
+    "/api/redflags": {
+      "get": {
+        "summary": "Return a compact red flag checklist",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": ["ASTER", "/redflags ASTER"]
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["json", "md", "markdown"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Red flag checklist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedFlagsResponse"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Return a compact red flag checklist",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string"
+                  },
+                  "query": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["json", "md", "markdown"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Red flag checklist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedFlagsResponse"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/compare": {
       "get": {
         "summary": "Compare two token research reports",
@@ -478,6 +563,44 @@
           },
           "action": {
             "type": "string"
+          }
+        }
+      },
+      "RedFlagsResponse": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "const": "redflags"
+          },
+          "query": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "number"
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          },
+          "redFlags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RedFlag"
+            }
+          },
+          "report": {
+            "$ref": "#/components/schemas/Report"
           }
         }
       },

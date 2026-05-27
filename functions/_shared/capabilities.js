@@ -51,6 +51,12 @@ export function dyorCapabilities(origin = "https://dyor.sh") {
       },
       {
         method: "GET",
+        path: "/api/redflags?q=ASTER",
+        url: `${baseUrl}/api/redflags?q=ASTER`,
+        returns: "Compact JSON red flag checklist with action items. Add format=md for Markdown.",
+      },
+      {
+        method: "GET",
         path: "/api/compare?a=ASTER&b=CLOUD",
         url: `${baseUrl}/api/compare?a=ASTER&b=CLOUD`,
         returns: "JSON comparison with scores, deltas, findings, and the two underlying reports.",
@@ -87,7 +93,7 @@ export function dyorCapabilities(origin = "https://dyor.sh") {
     plannedConnectors: ["holder distribution", "unlock schedules", "contract verification", "social/source checks"],
     examples: {
       scan: `${baseUrl}/api/scan?q=ASTER`,
-      redFlags: `${baseUrl}/api/scan?q=%2Fredflags%20ASTER`,
+      redFlags: `${baseUrl}/api/redflags?q=ASTER`,
       compare: `${baseUrl}/api/compare?a=ASTER&b=CLOUD`,
       watch: `${baseUrl}/api/watch?q=ASTER,CLOUD`,
       markdownBrief: `${baseUrl}/api/brief?q=ASTER&format=md`,

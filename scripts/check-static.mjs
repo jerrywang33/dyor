@@ -21,6 +21,7 @@ const required = [
   "functions/api/capabilities.js",
   "functions/api/compare.js",
   "functions/api/manifest.js",
+  "functions/api/redflags.js",
   "functions/api/report.js",
   "functions/api/report/[id].js",
   "functions/api/scan.js",

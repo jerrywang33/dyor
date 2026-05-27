@@ -2070,6 +2070,7 @@ function docsPage() {
           <article class="flow-step"><code>/llms.txt</code><span>Short LLM-readable project guide with commands and API examples.</span></article>
           <article class="flow-step"><code>/.well-known/ai-plugin.json</code><span>Plugin-style discovery manifest pointing agents to the OpenAPI schema.</span></article>
           <article class="flow-step"><code>/api/scan?q=ASTER</code><span>Live JSON research report with evidence, red flags, and watch triggers.</span></article>
+          <article class="flow-step"><code>/api/redflags?q=ASTER</code><span>Compact red flag checklist with unresolved risks and action items.</span></article>
           <article class="flow-step"><code>/api/brief?q=ASTER&format=md</code><span>Markdown report brief for agents, bots, docs, and notebooks.</span></article>
           <article class="flow-step"><code>/api/watch?q=ASTER,CLOUD</code><span>Batch refresh watched tokens with per-item success or failure.</span></article>
         </div>
