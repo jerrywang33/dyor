@@ -13,6 +13,7 @@ const required = [
   "functions/api/report.js",
   "functions/api/report/[id].js",
   "functions/api/scan.js",
+  "functions/api/watch.js",
 ];
 
 await Promise.all(required.map((file) => access(file)));

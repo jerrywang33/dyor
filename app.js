@@ -484,8 +484,6 @@ async function refreshWatchlist() {
   if (state.loading || !state.watchlist.length) return;
 
   const currentItems = state.watchlist.slice(0, WATCHLIST_LIMIT);
-  const refreshed = [];
-  let failures = 0;
 
   state.loading = true;
   state.error = "";
@@ -493,6 +491,74 @@ async function refreshWatchlist() {
   state.focus = "";
   state.query = "refresh queue";
   render();
+
+  const result = await refreshWatchlistBatch(currentItems).catch(() => null);
+  if (result) {
+    saveWatchlist(result.items);
+    state.loading = false;
+    state.error = result.failures
+      ? `${result.failures} watched report${result.failures === 1 ? "" : "s"} could not refresh. Kept the last local snapshot.`
+      : "";
+    render();
+    return;
+  }
+
+  const fallback = await refreshWatchlistSequential(currentItems);
+  saveWatchlist(fallback.items);
+  state.loading = false;
+  state.error = fallback.failures
+    ? `${fallback.failures} watched report${fallback.failures === 1 ? "" : "s"} could not refresh. Kept the last local snapshot.`
+    : "";
+  render();
+}
+
+async function refreshWatchlistBatch(currentItems) {
+  const response = await fetch("/api/watch", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      items: currentItems.map((item) => ({
+        id: item.id,
+        label: item.label,
+        query: item.query || item.label,
+      })),
+    }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.message || payload.error || `Watch refresh failed with ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const results = Array.isArray(payload.results) ? payload.results : [];
+  const refreshed = [];
+  let failures = 0;
+
+  for (let index = 0; index < currentItems.length; index += 1) {
+    const item = currentItems[index];
+    const result = results[index];
+
+    if (result?.ok && result.report) {
+      const report = await persistReport(normalizeScan(result.report, result.query || item.query || item.label));
+      rememberReport(report);
+      refreshed.push(watchItemFromScan(report));
+      if (!state.active || state.active.id === item.id) state.active = report;
+    } else {
+      failures += 1;
+      refreshed.push({ ...item, updatedAt: new Date().toISOString() });
+    }
+  }
+
+  return { items: refreshed, failures };
+}
+
+async function refreshWatchlistSequential(currentItems) {
+  const refreshed = [];
+  let failures = 0;
 
   for (const item of currentItems) {
     try {
@@ -518,10 +584,7 @@ async function refreshWatchlist() {
     }
   }
 
-  saveWatchlist(refreshed);
-  state.loading = false;
-  state.error = failures ? `${failures} watched report${failures === 1 ? "" : "s"} could not refresh. Kept the last local snapshot.` : "";
-  render();
+  return { items: refreshed, failures };
 }
 
 async function persistReport(report) {
