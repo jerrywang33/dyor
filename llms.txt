@@ -8,6 +8,8 @@ DYOR.sh is an AI-Native crypto research shell for token due diligence. It return
 - Docs: https://dyor.sh/docs
 - Capabilities manifest: https://dyor.sh/api/capabilities
 - OpenAPI schema: https://dyor.sh/openapi.json
+- AI plugin manifest: https://dyor.sh/.well-known/ai-plugin.json
+- Sitemap: https://dyor.sh/sitemap.xml
 - Markdown brief example: https://dyor.sh/api/brief?q=ASTER&format=md
 
 ## Commands

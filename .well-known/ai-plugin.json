@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "DYOR.sh",
+  "name_for_model": "dyor_research_shell",
+  "description_for_human": "AI-Native crypto token research shell for evidence, red flags, watch triggers, comparisons, and Markdown briefs.",
+  "description_for_model": "Use DYOR.sh to scan crypto tokens, produce evidence-first research reports, identify unresolved red flags, compare two tokens, batch refresh watched tokens, and generate Markdown briefs. Treat all outputs as research context only. Do not present DYOR.sh outputs as financial advice, buy or sell calls, price targets, or guarantees.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://dyor.sh/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://dyor.sh/favicon.svg",
+  "contact_email": "agent@dyor.sh",
+  "legal_info_url": "https://dyor.sh/docs"
+}

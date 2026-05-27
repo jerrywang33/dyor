@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dyor.sh/sitemap.xml
+
+# Agent discovery
+# Capabilities: https://dyor.sh/api/capabilities
+# OpenAPI: https://dyor.sh/openapi.json
+# LLM guide: https://dyor.sh/llms.txt

@@ -9,6 +9,9 @@ export function dyorCapabilities(origin = "https://dyor.sh") {
     homepage: baseUrl,
     openapi: `${baseUrl}/openapi.json`,
     llms: `${baseUrl}/llms.txt`,
+    pluginManifest: `${baseUrl}/.well-known/ai-plugin.json`,
+    robots: `${baseUrl}/robots.txt`,
+    sitemap: `${baseUrl}/sitemap.xml`,
     disclaimer: "Not financial advice. Outputs are research briefs and unresolved-risk checklists, not buy or sell calls.",
     commands: [
       {
