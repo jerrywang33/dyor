@@ -116,6 +116,7 @@ const state = {
   routeRequest: "",
   comparison: null,
   watchlist: loadWatchlist(),
+  focus: "",
 };
 
 const app = document.querySelector("#app");
@@ -276,6 +277,9 @@ function parseShellInput(value) {
   const watchCommand = query.match(/^(?:dyor\s+)?\/?watch\s+(.+)$/i);
   if (watchCommand) return { mode: "watch", query: cleanScanQuery(watchCommand[1]) };
 
+  const redFlagsCommand = query.match(/^(?:dyor\s+)?\/?redflags?\s+(.+)$/i);
+  if (redFlagsCommand) return { mode: "redflags", query: cleanScanQuery(redFlagsCommand[1]) };
+
   const scanCommand = query.match(/^(?:dyor\s+)?\/?scan\s+(.+)$/i);
   if (scanCommand) return { mode: "scan", query: cleanScanQuery(scanCommand[1]) };
 
@@ -378,12 +382,18 @@ async function performScan(value, options = {}) {
     return;
   }
 
+  if (input.mode === "redflags") {
+    await performScan(input.query, { ...options, focus: "redflags" });
+    return;
+  }
+
   const query = input.query;
   if (!query) return;
 
   state.query = query;
   state.loading = true;
   state.error = "";
+  state.focus = options.focus || "";
   state.comparison = null;
   render();
 
@@ -432,6 +442,7 @@ async function performCompare(leftQuery, rightQuery, options = {}) {
   state.query = `${leftQuery} vs ${rightQuery}`;
   state.loading = true;
   state.error = "";
+  state.focus = "";
   render();
 
   try {
@@ -479,6 +490,7 @@ async function refreshWatchlist() {
   state.loading = true;
   state.error = "";
   state.comparison = null;
+  state.focus = "";
   state.query = "refresh queue";
   render();
 
@@ -547,7 +559,7 @@ async function persistReport(report) {
 
 function normalizeScan(report, query) {
   const fallback = scanFor(query);
-  return {
+  const normalized = {
     ...fallback,
     ...report,
     id: report.id || fallback.id,
@@ -560,11 +572,109 @@ function normalizeScan(report, query) {
     findings: Array.isArray(report.findings) && report.findings.length ? report.findings : fallback.findings,
     evidence: report.evidence && typeof report.evidence === "object" ? report.evidence : fallback.evidence,
     confidence: report.confidence && typeof report.confidence === "object" ? report.confidence : fallback.confidence,
+    redFlags: Array.isArray(report.redFlags) && report.redFlags.length ? report.redFlags : fallback.redFlags,
     watch: Array.isArray(report.watch) ? report.watch : fallback.watch,
     alternatives: Array.isArray(report.alternatives) ? report.alternatives : fallback.alternatives,
     links: report.links && typeof report.links === "object" ? report.links : fallback.links,
     numbers: report.numbers && typeof report.numbers === "object" ? report.numbers : fallback.numbers,
   };
+
+  normalized.redFlags = Array.isArray(normalized.redFlags) && normalized.redFlags.length ? normalized.redFlags : deriveRedFlags(normalized);
+  return normalized;
+}
+
+function deriveRedFlags(scan) {
+  const rows = [];
+  const confidenceScore = numeric(scan.confidence?.score ?? scan.numbers?.confidenceScore);
+  const liquidityUsd = numeric(scan.numbers?.liquidityUsd);
+  const pairCount = numeric(scan.numbers?.pairCount);
+  const priceChange24h = numeric(scan.numbers?.priceChange24h);
+
+  if (confidenceScore && confidenceScore < 55) {
+    rows.push({
+      tone: "high",
+      label: "Weak identity confidence",
+      detail: scan.confidence?.summary || "Selected identity is not strongly supported.",
+      action: "Verify contract, official domain, and social links before sharing.",
+    });
+  } else if (confidenceScore && confidenceScore < 78) {
+    rows.push({
+      tone: "mid",
+      label: "Identity still needs checks",
+      detail: scan.confidence?.summary || "Selected identity is plausible but incomplete.",
+      action: "Cross-check source links against the selected token contract.",
+    });
+  }
+
+  if (liquidityUsd > 0 && liquidityUsd < 50_000) {
+    rows.push({
+      tone: "high",
+      label: "Thin liquidity",
+      detail: `Matched liquidity is ${formatMoney(liquidityUsd)}.`,
+      action: "Treat execution quality as fragile until deeper pools are confirmed.",
+    });
+  } else if (liquidityUsd > 0 && liquidityUsd < 250_000) {
+    rows.push({
+      tone: "mid",
+      label: "Shallow liquidity",
+      detail: `Matched liquidity is ${formatMoney(liquidityUsd)}.`,
+      action: "Watch route depth and pool withdrawals.",
+    });
+  }
+
+  if (Math.abs(priceChange24h) >= 35) {
+    rows.push({
+      tone: "high",
+      label: "Large 24h move",
+      detail: `24h price moved ${priceChange24h.toFixed(2)}%.`,
+      action: "Find the catalyst and review liquidity before trusting the current print.",
+    });
+  } else if (Math.abs(priceChange24h) >= 12) {
+    rows.push({
+      tone: "mid",
+      label: "Elevated 24h move",
+      detail: `24h price moved ${priceChange24h.toFixed(2)}%.`,
+      action: "Compare the move with news, social velocity, and pool changes.",
+    });
+  }
+
+  if (pairCount > 0 && pairCount <= 1) {
+    rows.push({
+      tone: "mid",
+      label: "Single-pool market",
+      detail: "Only one matched pool supports this market identity.",
+      action: "Confirm pair age, deployer history, and broader venue coverage.",
+    });
+  }
+
+  const unresolvedFindings = (Array.isArray(scan.findings) ? scan.findings : [])
+    .filter(([tone]) => tone === "high" || tone === "mid")
+    .slice(0, 2);
+  unresolvedFindings.forEach(([tone, text]) => {
+    rows.push({
+      tone,
+      label: tone === "high" ? "High-severity finding" : "Open finding",
+      detail: text,
+      action: "Resolve this before treating the report as complete.",
+    });
+  });
+
+  rows.push({
+    tone: "mid",
+    label: "Supply checks pending",
+    detail: "Holder concentration, unlock schedule, and treasury wallet checks are not connected in this build.",
+    action: "Use this as an unresolved supply-side checklist item.",
+  });
+
+  const seen = new Set();
+  return rows
+    .filter((item) => {
+      const key = `${item.label}:${item.detail}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 7);
 }
 
 function normalizeComparison(payload, leftQuery, rightQuery) {
@@ -931,6 +1041,16 @@ function markdownWatch(scan) {
     .join("\n");
 }
 
+function markdownRedFlags(scan) {
+  const redFlags = Array.isArray(scan.redFlags) ? scan.redFlags : deriveRedFlags(scan);
+  return redFlags
+    .map((item) => {
+      const action = item.action ? ` Action: ${markdownText(item.action)}` : "";
+      return `- ${markdownText(item.tone || "mid")}: ${markdownText(item.label || "Red flag")} - ${markdownText(item.detail || "")}${action}`;
+    })
+    .join("\n");
+}
+
 function markdownSourceLinks(scan, limit = 8) {
   return sourceLinks(scan, limit)
     .map((link) => `- ${markdownLink(link.label, link.url)}`)
@@ -952,6 +1072,9 @@ function reportMarkdown(scan) {
       .join("\n"),
     `## Metrics\n${markdownMetricRows(scan.metrics)}`,
   ];
+
+  const redFlags = markdownRedFlags(scan);
+  if (redFlags) parts.push(`## Red Flags\n${redFlags}`);
 
   const evidence = markdownEvidence(scan);
   if (evidence) parts.push(`## Evidence\n${evidence}`);
@@ -1171,6 +1294,35 @@ function deltaLeaderLabel(item, comparison) {
   return item.bias === "context" ? "Context" : "Even";
 }
 
+function redFlagsBlock(scan, compact = false) {
+  const redFlags = Array.isArray(scan.redFlags) && scan.redFlags.length ? scan.redFlags : deriveRedFlags(scan);
+  if (!redFlags.length) return "";
+
+  return `
+    <section class="redflag-panel ${state.focus === "redflags" ? "focused" : ""} ${compact ? "compact" : ""}">
+      <div class="section-head">
+        <span class="kicker">Red Flags</span>
+        <small>${state.focus === "redflags" ? "Focus mode" : `${redFlags.length} open check${redFlags.length === 1 ? "" : "s"}`}</small>
+      </div>
+      <div class="redflag-list">
+        ${redFlags
+          .map(
+            (item) => `
+              <article class="redflag-item ${escapeHtml(item.tone || "mid")}">
+                <div>
+                  <strong>${escapeHtml(item.label || "Open risk")}</strong>
+                  <span>${escapeHtml(item.detail || "")}</span>
+                </div>
+                ${item.action ? `<em>${escapeHtml(item.action)}</em>` : ""}
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
 function evidenceBlock(scan) {
   const evidence = scan.evidence;
   if (!evidence) return "";
@@ -1351,6 +1503,7 @@ function scanPanel() {
           .join("")}
         <button class="chip chip-compare" type="button" data-sample="ASTER vs CLOUD" ${state.loading ? "disabled" : ""}>ASTER vs CLOUD</button>
         <button class="chip chip-watch" type="button" data-sample="/watch ASTER" ${state.loading ? "disabled" : ""}>/watch ASTER</button>
+        <button class="chip chip-redflags" type="button" data-sample="/redflags ASTER" ${state.loading ? "disabled" : ""}>/redflags ASTER</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       ${
@@ -1383,6 +1536,7 @@ function scanPanel() {
                 </div>
               </aside>
             </div>
+            ${state.focus === "redflags" ? redFlagsBlock(scan, true) : ""}
           `
       }
     </div>
@@ -1789,6 +1943,7 @@ function reportView(scan) {
             </div>
           </div>
           <div class="metric-list">${metricRows(scan)}</div>
+          ${redFlagsBlock(scan)}
           ${evidenceBlock(scan)}
           ${researchQualityBlock(scan)}
           <h2>Findings</h2>

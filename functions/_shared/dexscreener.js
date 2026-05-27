@@ -70,6 +70,7 @@ export async function scanDexscreener(query) {
     findings: buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, priceChange24h }),
     evidence: buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume24h }),
     confidence,
+    redFlags: buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24h, pairCount, priceChange24h }),
     watch: buildWatch({ best, links, liquidityUsd, volume24h, pairCount, priceChange24h }),
     alternatives,
     links,
@@ -104,6 +105,8 @@ async function fetchPairs(query) {
 function parseResearchInput(value) {
   let query = cleanQuery(value)
     .replace(/^(?:dyor\s+)?\/?scan\s+/i, "")
+    .replace(/^(?:dyor\s+)?\/?redflags?\s+/i, "")
+    .replace(/^(?:dyor\s+)?\/?watch\s+/i, "")
     .replace(/^\$+/, "")
     .trim();
 
@@ -293,6 +296,111 @@ function buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume2
       .filter(([, value]) => typeof value === "string" && value.startsWith("http"))
       .map(([label, url]) => ({ label: linkLabel(label), url })),
   };
+}
+
+function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24h, pairCount, priceChange24h }) {
+  const rows = [];
+  const volumeToLiquidity = liquidityUsd > 0 ? volume24h / liquidityUsd : 0;
+
+  if (confidence.score < 55) {
+    rows.push({
+      tone: "high",
+      label: "Weak identity match",
+      detail: confidence.summary,
+      action: "Verify contract address, canonical domain, and official social links before using the ticker.",
+    });
+  } else if (confidence.score < 78) {
+    rows.push({
+      tone: "mid",
+      label: "Identity still needs source checks",
+      detail: confidence.summary,
+      action: "Cross-check website, explorer, and social links against the selected base token.",
+    });
+  }
+
+  if (liquidityUsd < 50_000) {
+    rows.push({
+      tone: "high",
+      label: "Thin liquidity",
+      detail: `Matched pool liquidity is only ${money(liquidityUsd)}.`,
+      action: "Treat execution quality as fragile until deeper venues or liquidity locks are confirmed.",
+    });
+  } else if (liquidityUsd < 250_000) {
+    rows.push({
+      tone: "mid",
+      label: "Shallow liquidity",
+      detail: `Matched pool liquidity is ${money(liquidityUsd)}.`,
+      action: "Watch pool withdrawals and route concentration before sizing any conclusion.",
+    });
+  }
+
+  if (volumeToLiquidity > 6) {
+    rows.push({
+      tone: "high",
+      label: "Volume outruns liquidity",
+      detail: `24h volume is ${volumeToLiquidity.toFixed(2)}x matched liquidity.`,
+      action: "Review recent candles, slippage, and possible wash or momentum bursts.",
+    });
+  } else if (volumeToLiquidity > 4) {
+    rows.push({
+      tone: "mid",
+      label: "Flow pressure",
+      detail: `24h volume is ${volumeToLiquidity.toFixed(2)}x matched liquidity.`,
+      action: "Check whether turnover is supported by durable liquidity or short-lived flow.",
+    });
+  }
+
+  if (Math.abs(priceChange24h) >= 35) {
+    rows.push({
+      tone: "high",
+      label: "Large 24h move",
+      detail: `Leading pair moved ${percent(priceChange24h)} in 24h.`,
+      action: "Find the catalyst and confirm liquidity depth before trusting the current print.",
+    });
+  } else if (Math.abs(priceChange24h) >= 12) {
+    rows.push({
+      tone: "mid",
+      label: "Elevated 24h move",
+      detail: `Leading pair moved ${percent(priceChange24h)} in 24h.`,
+      action: "Compare the move with news, unlocks, and pool changes.",
+    });
+  }
+
+  if (pairCount <= 1) {
+    rows.push({
+      tone: "mid",
+      label: "Single-pool market",
+      detail: "Only one matched DEX pair supports this market identity.",
+      action: "Confirm pair creation history and wait for broader venue confirmation when possible.",
+    });
+  }
+
+  if (!links.website || !(links.x || links.telegram || links.discord)) {
+    rows.push({
+      tone: "mid",
+      label: "Incomplete source links",
+      detail: "Dex profile does not expose a full canonical source trail.",
+      action: "Use explorer and official domain checks before relying on social claims.",
+    });
+  }
+
+  if (alternatives.length) {
+    rows.push({
+      tone: alternatives.length >= 3 ? "mid" : "low",
+      label: "Ticker ambiguity",
+      detail: `${alternatives.length} other search candidate${alternatives.length === 1 ? "" : "s"} matched this query.`,
+      action: "Verify the selected token address before sharing the report.",
+    });
+  }
+
+  rows.push({
+    tone: "mid",
+    label: "Supply checks pending",
+    detail: "Holder concentration, unlock schedule, and treasury wallet checks are not connected in this build.",
+    action: "Treat supply-side conclusions as unresolved until holder and unlock connectors are added.",
+  });
+
+  return rows.slice(0, 7);
 }
 
 function buildConfidence({ query, best, group, links, alternatives, pairCount, liquidityUsd }) {

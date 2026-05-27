@@ -122,6 +122,7 @@ function sanitizeReport(value) {
     findings: cleanFindings(value.findings),
     evidence: cleanEvidence(value.evidence),
     confidence: cleanConfidence(value.confidence),
+    redFlags: cleanRedFlags(value.redFlags),
     watch: cleanWatch(value.watch),
     alternatives: cleanAlternatives(value.alternatives),
     links: cleanLinks(value.links),
@@ -192,6 +193,19 @@ function cleanWatch(value) {
       detail: cleanText(item?.detail, 260),
     }))
     .filter((item) => item.label || item.detail);
+}
+
+function cleanRedFlags(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, 12)
+    .map((item) => ({
+      tone: cleanTone(item?.tone),
+      label: cleanText(item?.label, 100),
+      detail: cleanText(item?.detail, 320),
+      action: cleanText(item?.action, 320),
+    }))
+    .filter((item) => item.label || item.detail || item.action);
 }
 
 function cleanAlternatives(value) {
