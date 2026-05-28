@@ -1008,6 +1008,7 @@ function labelize(value) {
     liquidity: "Liquidity",
     redemption: "Redemption",
     market: "Market",
+    venue: "Venue",
     x: "X",
   };
   return (
@@ -1091,7 +1092,7 @@ function markdownLink(label, url) {
 
 function markdownMetricRows(metrics = {}) {
   return Object.entries(metrics)
-    .map(([label, value]) => `- ${markdownText(label)}: ${markdownText(value)}`)
+    .map(([label, value]) => `- ${markdownText(labelize(label))}: ${markdownText(value)}`)
     .join("\n");
 }
 

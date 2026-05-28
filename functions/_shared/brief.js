@@ -90,7 +90,7 @@ function assetSnapshot(report) {
 
 function objectRows(value = {}) {
   const rows = Object.entries(value || {})
-    .map(([label, item]) => `- ${markdownText(label)}: ${markdownText(item)}`)
+    .map(([label, item]) => `- ${markdownText(labelize(label))}: ${markdownText(item)}`)
     .join("\n");
   return rows || "- No metrics reported";
 }
@@ -208,6 +208,12 @@ function labelize(value) {
     docs: "Docs",
     explorer: "Explorer",
     pairExplorer: "Pair Explorer",
+    issuer: "Issuer",
+    collateral: "Collateral",
+    liquidity: "Liquidity",
+    redemption: "Redemption",
+    market: "Market",
+    venue: "Venue",
     x: "X",
   };
   return (
