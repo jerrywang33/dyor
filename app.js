@@ -185,6 +185,34 @@ const sampleSupplements = {
   xaut: {
     source: "RWA asset profile",
     live: false,
+    redFlags: [
+      {
+        tone: "mid",
+        label: "Custody and bar claim review",
+        detail: "XAUT tracks physical gold, but the practical claim depends on issuer terms, vault custody, and redemption rules.",
+        action: "Review Tether Gold docs, terms, supported chains, minimum redemption size, and latest gold backing information.",
+      },
+      {
+        tone: "mid",
+        label: "Venue and wrapper fragmentation",
+        detail: "Liquidity can differ by chain, venue, and wrapper even when the reference asset is the same gold token.",
+        action: "Confirm the exact contract, chain, pool, and issuer source links before comparing liquidity with PAXG.",
+      },
+    ],
+    watch: [
+      {
+        tone: "low",
+        label: "Gold backing updates",
+        value: "Issuer docs",
+        detail: "Watch issuer updates, gold custody disclosures, and redemption-term changes.",
+      },
+      {
+        tone: "mid",
+        label: "Price-to-spot drift",
+        value: "Gold basis",
+        detail: "Compare on-chain price against spot gold and main centralized venues.",
+      },
+    ],
     evidence: {
       identity: [
         ["Asset", "Tether Gold"],
@@ -210,6 +238,34 @@ const sampleSupplements = {
   paxg: {
     source: "RWA asset profile",
     live: false,
+    redFlags: [
+      {
+        tone: "mid",
+        label: "Bar allocation and redemption",
+        detail: "PAXG has a clear gold-backing model, but practical diligence still depends on allocation lookup, reserve reporting, fees, and redemption workflow.",
+        action: "Check Paxos product docs, allocation details, redemption rules, fees, and user eligibility.",
+      },
+      {
+        tone: "mid",
+        label: "Gold-market hours and execution",
+        detail: "Primary purchase, sale, or redemption behavior can depend on gold-market hours and Paxos platform rules.",
+        action: "Separate on-chain venue liquidity from primary issuer redemption and spot-gold execution constraints.",
+      },
+    ],
+    watch: [
+      {
+        tone: "low",
+        label: "Reserve reports",
+        value: "Paxos docs",
+        detail: "Watch for updated reserve reports, allocation tooling changes, and issuer policy updates.",
+      },
+      {
+        tone: "mid",
+        label: "XAUT comparison",
+        value: "Gold basis",
+        detail: "Track liquidity, redemption, and price-to-spot differences against XAUT.",
+      },
+    ],
     evidence: {
       identity: [
         ["Asset", "Paxos Gold"],
@@ -235,6 +291,34 @@ const sampleSupplements = {
   buidl: {
     source: "RWA asset profile",
     live: false,
+    redFlags: [
+      {
+        tone: "mid",
+        label: "Qualified access and transfer restrictions",
+        detail: "BUIDL is an institutional tokenized fund, so holder eligibility, subscription documents, and transfer agent records are first-order checks.",
+        action: "Review Securitize onboarding, fund documents, transfer restrictions, subscription/redemption process, and distribution mechanics.",
+      },
+      {
+        tone: "mid",
+        label: "Yield and NAV are not generic stablecoin traits",
+        detail: "Tokenized money fund mechanics differ from stablecoins, including fund terms, yield distribution, custody, and eligible investor rules.",
+        action: "Keep BUIDL separate from stablecoin comparisons unless fund documents and holder rights are explicit.",
+      },
+    ],
+    watch: [
+      {
+        tone: "low",
+        label: "Fund document updates",
+        value: "Securitize",
+        detail: "Watch for new share classes, chain expansions, custodian changes, or subscription/redemption updates.",
+      },
+      {
+        tone: "mid",
+        label: "OUSG comparison",
+        value: "Treasury funds",
+        detail: "Compare holder eligibility, portfolio composition, fees, transferability, and redemption terms against OUSG.",
+      },
+    ],
     evidence: {
       identity: [
         ["Asset", "BlackRock USD Institutional Digital Liquidity Fund"],
@@ -260,6 +344,34 @@ const sampleSupplements = {
   ousg: {
     source: "RWA asset profile",
     live: false,
+    redFlags: [
+      {
+        tone: "mid",
+        label: "Qualified access restrictions",
+        detail: "OUSG is built for qualified access, so eligibility and legal structure are part of the asset, not a secondary detail.",
+        action: "Review Ondo product docs, important notes, jurisdiction restrictions, and legal offering documents.",
+      },
+      {
+        tone: "mid",
+        label: "Portfolio and redemption mechanics",
+        detail: "The portfolio mix, instant mint/redeem limits, fees, and supported networks can change over time.",
+        action: "Check the live Ondo product page and docs before relying on stale TVL, yield, portfolio, or redemption assumptions.",
+      },
+    ],
+    watch: [
+      {
+        tone: "low",
+        label: "Portfolio composition",
+        value: "Ondo docs",
+        detail: "Watch holdings, fees, yield disclosures, supported chains, and administrator reporting.",
+      },
+      {
+        tone: "mid",
+        label: "BUIDL comparison",
+        value: "Treasury funds",
+        detail: "Compare fund wrapper, access rules, portfolio composition, and redemption windows against BUIDL.",
+      },
+    ],
     evidence: {
       identity: [
         ["Asset", "Ondo Short-Term US Government Treasuries"],
@@ -285,6 +397,34 @@ const sampleSupplements = {
   dtsla: {
     source: "RWA asset profile",
     live: false,
+    redFlags: [
+      {
+        tone: "mid",
+        label: "Backing and broker workflow",
+        detail: "dShares depend on issuer, broker, custodian, KYC, and redemption mechanics rather than only on-chain liquidity.",
+        action: "Verify Dinari docs, token contract, backing model, eligible jurisdictions, KYC flow, and redemption process.",
+      },
+      {
+        tone: "mid",
+        label: "Market-hours and corporate actions",
+        detail: "Tokenized equities can trade outside regular US market hours and must handle dividends, splits, delistings, and other corporate actions.",
+        action: "Check Dinari trading hours, price source docs, corporate-action policy, and off-hours liquidity before comparing with TSLA spot equity.",
+      },
+    ],
+    watch: [
+      {
+        tone: "mid",
+        label: "Trading sessions",
+        value: "US equities",
+        detail: "Watch regular, extended, overnight, and weekend session behavior plus liquidity changes.",
+      },
+      {
+        tone: "mid",
+        label: "Corporate actions",
+        value: "TSLA",
+        detail: "Track how dividends, splits, voting, and other issuer events are handled for the dShare.",
+      },
+    ],
     evidence: {
       identity: [
         ["Asset", "Dinari Tesla dShare"],
