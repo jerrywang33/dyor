@@ -1,85 +1,85 @@
 const samples = [
   {
-    id: "aster",
-    label: "ASTER",
-    chain: "BNB Chain / multi-chain",
-    title: "Aster",
-    risk: 61,
-    verdict: "Review before sizing",
+    id: "ondo",
+    label: "ONDO",
+    chain: "Ethereum / multi-chain",
+    title: "Ondo Finance",
+    risk: 48,
+    verdict: "Review issuer and liquidity",
     metrics: {
-      liquidity: "Depth concentrated",
-      holders: "Top wallets elevated",
-      unlocks: "Schedule watch",
-      social: "Narrative accelerating",
-      source: "Mixed public signals",
+      issuer: "Docs required",
+      collateral: "Reserve proof review",
+      liquidity: "Active market depth",
+      redemption: "Terms watch",
+      market: "Institutional narrative",
     },
     numbers: {
-      liquidityUsd: 820000,
-      volume24h: 430000,
-      pairCount: 6,
-      priceChange24h: 8.4,
-      confidenceScore: 68,
+      liquidityUsd: 1450000,
+      volume24h: 620000,
+      pairCount: 8,
+      priceChange24h: 3.2,
+      confidenceScore: 76,
     },
     confidence: {
-      score: 68,
+      score: 76,
       label: "Medium confidence",
-      summary: "Prototype identity has enough public structure for a first-pass report.",
-      reasons: ["Ticker and project references should be verified against canonical links."],
+      summary: "Issuer identity is recognizable, but asset-level docs and redemption terms still need review.",
+      reasons: ["Issuer website, asset contract, fund docs, and custody disclosures should be cross-checked."],
     },
     findings: [
-      ["mid", "Liquidity is active, but the strongest venues are concentrated around a few routing paths."],
-      ["high", "Narrative velocity is high enough to make entries sensitive to headline reversals."],
-      ["mid", "Team and ecosystem references should be cross-checked against official docs before assuming affiliation."],
-      ["low", "There is enough public market structure to build a watchlist rather than rely on social posts."],
+      ["low", "Matched on-chain markets show enough depth for a first-pass RWA liquidity review."],
+      ["mid", "Asset-level diligence should verify issuer docs, reserve/collateral claims, and redemption mechanics."],
+      ["mid", "Market depth is still concentrated around a small number of routing paths."],
+      ["low", "There is enough public structure to add the asset to an ongoing watch lane."],
     ],
   },
   {
-    id: "cloud",
-    label: "CLOUD",
-    chain: "Solana",
-    title: "Cloud",
-    risk: 44,
-    verdict: "Watch liquidity",
+    id: "usdy",
+    label: "USDY",
+    chain: "Ethereum / multi-chain",
+    title: "Ondo US Dollar Yield",
+    risk: 52,
+    verdict: "Verify terms and venues",
     metrics: {
-      liquidity: "DEX depth uneven",
-      holders: "Moderate spread",
-      unlocks: "No local data",
-      social: "Steady mentions",
-      source: "Needs source review",
+      issuer: "Issuer-led updates",
+      collateral: "Yield disclosure review",
+      liquidity: "Venue depth uneven",
+      redemption: "Terms watch",
+      market: "Docs required",
     },
     numbers: {
-      liquidityUsd: 390000,
-      volume24h: 180000,
-      pairCount: 4,
-      priceChange24h: 4.1,
-      confidenceScore: 61,
+      liquidityUsd: 540000,
+      volume24h: 140000,
+      pairCount: 3,
+      priceChange24h: 0.8,
+      confidenceScore: 64,
     },
     confidence: {
-      score: 61,
+      score: 64,
       label: "Medium confidence",
-      summary: "Prototype identity is plausible, but source review remains open.",
-      reasons: ["Contract, website, and social links need a canonical match."],
+      summary: "RWA asset identity is plausible, but docs and supported venues remain open checks.",
+      reasons: ["Contract, issuer page, yield disclosures, and jurisdictional availability need a canonical match."],
     },
     findings: [
-      ["mid", "The first pass should verify contract address, official links, and token distribution."],
-      ["mid", "Pool depth needs live monitoring because small withdrawals can change execution quality."],
-      ["low", "Social activity looks researchable, but sentiment is not a substitute for tokenomics."],
-      ["low", "No immediate critical flag in the prototype profile."],
+      ["mid", "The first pass should verify the asset contract, issuer page, supported jurisdictions, and redemption terms."],
+      ["mid", "Venue depth needs live monitoring because small withdrawals can change execution quality."],
+      ["low", "Issuer updates are researchable, but docs and attestations should drive conclusions."],
+      ["low", "No immediate critical flag in the prototype RWA profile."],
     ],
   },
   {
-    id: "0x",
-    label: "0x742d...44e",
+    id: "rwa-contract",
+    label: "0xRWA...44e",
     chain: "Ethereum",
-    title: "Contract Scan",
+    title: "RWA Contract Scan",
     risk: 78,
-    verdict: "High-risk until verified",
+    verdict: "High-risk until issuer verified",
     metrics: {
+      issuer: "Unverified",
+      collateral: "Unknown",
       liquidity: "Unknown route",
-      holders: "Unverified",
-      unlocks: "Unknown",
-      social: "No canonical match",
-      source: "Contract-first scan",
+      redemption: "Unknown",
+      market: "No issuer match",
     },
     numbers: {
       liquidityUsd: 0,
@@ -91,14 +91,14 @@ const samples = [
     confidence: {
       score: 24,
       label: "Low confidence",
-      summary: "Contract identity is not verified in the prototype profile.",
-      reasons: ["Explorer verification and canonical project links are required."],
+      summary: "Asset identity is not verified in the prototype profile.",
+      reasons: ["Explorer verification, issuer links, legal docs, and reserve/collateral disclosures are required."],
     },
     findings: [
-      ["high", "Contract address lacks a verified project identity in this prototype run."],
-      ["high", "Unknown holder concentration should block any automated action."],
-      ["mid", "Require explorer verification, official website match, and pair creation history."],
-      ["mid", "Treat social links as untrusted until linked from the project's canonical domain."],
+      ["high", "Contract address lacks a verified RWA issuer identity in this prototype run."],
+      ["high", "Unknown reserve, custody, and holder concentration should block any automated conclusion."],
+      ["mid", "Require explorer verification, issuer website match, docs, and pair creation history."],
+      ["mid", "Treat public source links as untrusted until linked from the issuer's canonical domain."],
     ],
   },
 ];
@@ -350,17 +350,17 @@ function scanFor(value) {
       risk: 67,
       verdict: "Needs source verification",
       metrics: {
+        issuer: "Unknown",
+        collateral: "Unknown",
         liquidity: "Unknown",
-        holders: "Unknown",
-        unlocks: "Unknown",
-        social: "Unmatched",
-        source: "Manual review",
+        redemption: "Unknown",
+        market: "Manual review",
       },
       findings: [
         ["high", "No trusted project identity has been matched yet."],
-        ["mid", "Run contract, pool, holder, unlock, and social checks before making assumptions."],
-        ["mid", "Require canonical links from the project website and official social accounts."],
-        ["low", "Add it to watch mode once the primary contract is verified."],
+        ["mid", "Run issuer, collateral, venue, holder, redemption, and source checks before making assumptions."],
+        ["mid", "Require canonical links from the issuer website, docs, and official accounts."],
+        ["low", "Add it to watch mode once the primary asset contract is verified."],
       ],
     }
   );
@@ -658,14 +658,14 @@ function deriveRedFlags(scan) {
       tone: "high",
       label: "Weak identity confidence",
       detail: scan.confidence?.summary || "Selected identity is not strongly supported.",
-      action: "Verify contract, official domain, and social links before sharing.",
+      action: "Verify asset contract, issuer domain, docs, and official links before sharing.",
     });
   } else if (confidenceScore && confidenceScore < 78) {
     rows.push({
       tone: "mid",
       label: "Identity still needs checks",
       detail: scan.confidence?.summary || "Selected identity is plausible but incomplete.",
-      action: "Cross-check source links against the selected token contract.",
+      action: "Cross-check source links against the selected RWA asset contract.",
     });
   }
 
@@ -697,7 +697,7 @@ function deriveRedFlags(scan) {
       tone: "mid",
       label: "Elevated 24h move",
       detail: `24h price moved ${priceChange24h.toFixed(2)}%.`,
-      action: "Compare the move with news, social velocity, and pool changes.",
+      action: "Compare the move with issuer updates, source docs, and pool changes.",
     });
   }
 
@@ -724,9 +724,9 @@ function deriveRedFlags(scan) {
 
   rows.push({
     tone: "mid",
-    label: "Supply checks pending",
-    detail: "Holder concentration, unlock schedule, and treasury wallet checks are not connected in this build.",
-    action: "Use this as an unresolved supply-side checklist item.",
+    label: "RWA docs pending",
+    detail: "Issuer docs, collateral/reserve proof, redemption terms, holder concentration, and custody checks are not fully connected in this build.",
+    action: "Use this as an unresolved RWA diligence checklist item.",
   });
 
   const seen = new Set();
@@ -816,7 +816,7 @@ function compareSummary(left, right) {
     return `${left.label} and ${right.label} are close on first-pass evidence. Compare the report details before forming a view.`;
   }
   const leader = scores.leader === "left" ? left : right;
-  return `${leader.label} leads on the composite research score. Verify contract identity, source links, and missing off-chain data before relying on ticker-level conclusions.`;
+  return `${leader.label} leads on the composite research score. Verify issuer identity, source links, and missing off-chain data before relying on ticker-level conclusions.`;
 }
 
 function compareDeltas(left, right) {
@@ -904,10 +904,10 @@ function comparisonBriefPath(comparison) {
 function header() {
   return `
     <header class="topbar">
-      <a class="brand" href="/" data-link aria-label="AI-Native Research Shell home">
+      <a class="brand" href="/" data-link aria-label="AI-Native RWA Research Shell home">
         <span class="brand-mark" aria-hidden="true">🔍</span>
         <span>
-          <strong>AI-Native Research Shell</strong>
+          <strong>AI-Native RWA Research Shell</strong>
         </span>
       </a>
       <nav class="nav" aria-label="Primary">
@@ -927,7 +927,7 @@ function header() {
 function footer() {
   return `
     <footer class="footer">
-      <span>AI-Native research shell for token due diligence. Not financial advice.</span>
+      <span>AI-Native RWA research shell. Not financial advice.</span>
       <a href="/docs" data-link>Methodology</a>
     </footer>
   `;
@@ -939,7 +939,7 @@ function consoleLines(scan) {
     `<p><em>$</em> <b>dyor</b> scan <i>${key}</i></p>`,
     `<p><em>></em> resolving project identity: ${escapeHtml(scan.title)}</p>`,
     `<p><em>></em> chain context: ${escapeHtml(scan.chain)}</p>`,
-    `<p><em>></em> ${scan.live ? "fetching live DEX pairs and liquidity" : "checking pools, holders, unlocks, social velocity"}</p>`,
+    `<p><em>></em> ${scan.live ? "fetching live RWA market pairs and liquidity" : "checking issuer, collateral, liquidity, holders, and redemption terms"}</p>`,
     `<p><em>></em> mapping risk factors to evidence buckets</p>`,
     `<p><em>></em> verdict: <i>${escapeHtml(scan.verdict)}</i></p>`,
     `<p><em>></em> report: /r/${escapeHtml(scan.id)}</p>`,
@@ -962,10 +962,10 @@ function comparisonConsoleLines(comparison) {
   const leader = comparison.scores?.leader === "left" ? left : comparison.scores?.leader === "right" ? right : null;
   return [
     `<p><em>$</em> <b>dyor</b> compare <i>${escapeHtml(left.label)}</i> <i>${escapeHtml(right.label)}</i></p>`,
-    `<p><em>></em> resolving both token identities and market sets</p>`,
+    `<p><em>></em> resolving both RWA asset identities and market sets</p>`,
     `<p><em>></em> ${escapeHtml(left.label)}: ${escapeHtml(left.chain)} · risk ${escapeHtml(left.risk)}</p>`,
     `<p><em>></em> ${escapeHtml(right.label)}: ${escapeHtml(right.chain)} · risk ${escapeHtml(right.risk)}</p>`,
-    `<p><em>></em> comparing risk, identity confidence, liquidity, volume, and market coverage</p>`,
+    `<p><em>></em> comparing issuer confidence, liquidity, volume, and market coverage</p>`,
     `<p><em>></em> verdict: <i>${escapeHtml(comparison.verdict)}</i></p>`,
     `<p><em>></em> ${leader ? `research edge: ${escapeHtml(leader.label)}` : "research edge: no clear leader"}</p>`,
   ].join("");
@@ -976,7 +976,7 @@ function metricRows(scan) {
     .map(
       ([label, value]) => `
         <div class="metric">
-          <span>${escapeHtml(label)}</span>
+          <span>${escapeHtml(labelize(label))}</span>
           <strong>${escapeHtml(value)}</strong>
         </div>
       `
@@ -998,11 +998,16 @@ function formatUpdatedAt(value) {
 
 function labelize(value) {
   const labels = {
-    baseToken: "Base token",
+    baseToken: "Asset contract",
     dexscreener: "Dexscreener",
     docs: "Docs",
     explorer: "Explorer",
     pairExplorer: "Pair Explorer",
+    issuer: "Issuer",
+    collateral: "Collateral",
+    liquidity: "Liquidity",
+    redemption: "Redemption",
+    market: "Market",
     x: "X",
   };
   return (
@@ -1142,7 +1147,7 @@ function reportMarkdown(scan) {
   const parts = [
     `# DYOR Report: ${markdownText(scan.title || scan.label)}`,
     [
-      `- Token: ${markdownText(scan.label)}`,
+      `- RWA asset: ${markdownText(scan.label)}`,
       `- Chain: ${markdownText(scan.chain)}`,
       `- Risk score: ${markdownText(scan.risk)}`,
       `- Verdict: ${markdownText(scan.verdict)}`,
@@ -1187,7 +1192,7 @@ function reportMarkdown(scan) {
   const links = markdownSourceLinks(scan);
   if (links) parts.push(`## Sources\n${links}`);
 
-  parts.push("Not financial advice. Generated by dyor.sh.");
+  parts.push("Not financial advice or yield guarantee. Generated by dyor.sh.");
   return `${parts.filter(Boolean).join("\n\n")}\n`;
 }
 
@@ -1241,7 +1246,7 @@ function comparisonMarkdown(comparison) {
       `- Sources: ${sourceLinks(comparison.right, 4).map((link) => markdownLink(link.label, link.url)).join(", ") || "None"}`,
     ].join("\n"),
   );
-  parts.push("Not financial advice. Generated by dyor.sh.");
+  parts.push("Not financial advice or yield guarantee. Generated by dyor.sh.");
   return `${parts.filter(Boolean).join("\n\n")}\n`;
 }
 
@@ -1518,7 +1523,7 @@ function alternativesBlock(items) {
             (item) => `
               <a class="alt-row" href="${escapeHtml(safeExternalUrl(item.url) || "#")}" target="_blank" rel="noreferrer">
                 <span>
-                  <strong>${escapeHtml(item.label || "Token")}</strong>
+                  <strong>${escapeHtml(item.label || "RWA asset")}</strong>
                   <small>${escapeHtml(item.title || "")} · ${escapeHtml(item.chain || "Unknown chain")}</small>
                 </span>
                 <em>${escapeHtml(item.liquidity || "")}</em>
@@ -1567,7 +1572,7 @@ function scanPanel() {
             value="${escapeHtml(state.query)}"
             autocomplete="off"
             spellcheck="false"
-            aria-label="Token, contract, or project"
+            aria-label="RWA asset, contract, issuer, or project"
             ${state.loading ? "disabled" : ""}
           />
         </label>
@@ -1582,9 +1587,9 @@ function scanPanel() {
               `<button class="chip" type="button" data-sample="${sample.label}" ${state.loading ? "disabled" : ""}>${sample.label}</button>`,
           )
           .join("")}
-        <button class="chip chip-compare" type="button" data-sample="ASTER vs CLOUD" ${state.loading ? "disabled" : ""}>ASTER vs CLOUD</button>
-        <button class="chip chip-watch" type="button" data-sample="/watch ASTER" ${state.loading ? "disabled" : ""}>/watch ASTER</button>
-        <button class="chip chip-redflags" type="button" data-sample="/redflags ASTER" ${state.loading ? "disabled" : ""}>/redflags ASTER</button>
+        <button class="chip chip-compare" type="button" data-sample="ONDO vs USDY" ${state.loading ? "disabled" : ""}>ONDO vs USDY</button>
+        <button class="chip chip-watch" type="button" data-sample="/watch ONDO" ${state.loading ? "disabled" : ""}>/watch ONDO</button>
+        <button class="chip chip-redflags" type="button" data-sample="/redflags ONDO" ${state.loading ? "disabled" : ""}>/redflags ONDO</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       ${
@@ -1635,7 +1640,7 @@ function watchlistBlock() {
         <span class="kicker">Research Queue</span>
         <h2>Pin live reports into a local watch lane.</h2>
         <p>
-          Keep the tokens you are still investigating in one place. The queue stores only in this browser and refreshes when a watched report is scanned again.
+          Keep the RWA assets you are still investigating in one place. The queue stores only in this browser and refreshes when a watched report is scanned again.
         </p>
         <div class="watchlist-actions">
           ${active ? watchButton(active) : ""}
@@ -1699,22 +1704,22 @@ function home() {
       <section class="hero">
         <div class="hero-layout">
           <div class="hero-copy">
-            <span class="eyebrow">AI-Native Research Shell</span>
+            <span class="eyebrow">AI-Native RWA Research Shell</span>
             <h1 class="wordmark">dyor.sh</h1>
             <p class="hero-title">
-              Crypto research that keeps <span>risk, evidence, and uncertainty</span> in the same window.
+              RWA research that keeps <span>issuer, collateral, liquidity, and uncertainty</span> in the same window.
             </p>
             <p class="hero-text">
-              Type a token, contract, project, or social link. The agent turns fragmented market data into a structured research brief.
+              Type a tokenized treasury, credit vault, fund token, contract, issuer, or source link. The agent turns fragmented RWA signals into a structured research brief.
             </p>
             <div class="hero-stats" aria-label="Research scope">
-              <span><strong>4</strong> risk surfaces</span>
-              <span><strong>0</strong> buy or sell calls</span>
+              <span><strong>6</strong> RWA checks</span>
+              <span><strong>0</strong> investment calls</span>
               <span><strong>24/7</strong> watch triggers</span>
             </div>
             <div class="release-strip" aria-label="Release status">
               <span><strong>v0.1 live</strong> Cloudflare Pages + Functions</span>
-              <span><strong>Dexscreener</strong> first live connector</span>
+              <span><strong>Dexscreener</strong> first market connector</span>
             </div>
           </div>
           <div class="hero-product">
@@ -1722,12 +1727,12 @@ function home() {
           </div>
         </div>
         <div class="signal-strip" aria-label="Research signal coverage">
-          <span>Identity</span>
+          <span>Issuer</span>
+          <span>Collateral</span>
           <span>Liquidity</span>
-          <span>Holders</span>
-          <span>Unlocks</span>
-          <span>Source</span>
-          <span>Attention</span>
+          <span>Redemption</span>
+          <span>Docs</span>
+          <span>Market</span>
         </div>
       </section>
 
@@ -1736,38 +1741,38 @@ function home() {
         <section class="split">
           <div>
             <span class="kicker">Agent Workflow</span>
-            <h2>From noisy token links to a defensible research path.</h2>
+            <h2>From noisy RWA links to a defensible asset research path.</h2>
             <p>
-              DYOR.sh is designed as a research agent, not a trading signal. It keeps the workflow evidence-first and makes uncertainty visible.
+              DYOR.sh is designed as an RWA research agent, not an investment signal. It keeps issuer claims, market data, and missing evidence visible.
             </p>
           </div>
           <div class="flow">
             <article class="flow-step">
               <span class="flow-index">01</span>
               <div>
-                <strong>Resolve identity</strong>
-                <span>Match ticker, contract, chain, website, and official social accounts before analysis.</span>
+                <strong>Resolve asset identity</strong>
+                <span>Match issuer, asset contract, chain, website, docs, and official source links before analysis.</span>
               </div>
             </article>
             <article class="flow-step">
               <span class="flow-index">02</span>
               <div>
-                <strong>Check risk surfaces</strong>
-                <span>Review holders, pool depth, unlocks, market structure, dev activity, and narrative velocity.</span>
+                <strong>Check RWA risk surfaces</strong>
+                <span>Review collateral claims, reserve proof, custody, redemption terms, holder spread, and venue depth.</span>
               </div>
             </article>
             <article class="flow-step">
               <span class="flow-index">03</span>
               <div>
                 <strong>Generate report</strong>
-                <span>Return a brief with red flags, confidence, links, and watch triggers.</span>
+                <span>Return a brief with unresolved red flags, confidence, source links, and watch triggers.</span>
               </div>
             </article>
             <article class="flow-step">
               <span class="flow-index">04</span>
               <div>
                 <strong>Watch changes</strong>
-                <span>Track liquidity moves, whale transfers, CEX notices, unlock windows, and social anomalies.</span>
+                <span>Track liquidity moves, issuer updates, reserve attestations, yield changes, and venue anomalies.</span>
               </div>
             </article>
           </div>
@@ -1776,27 +1781,27 @@ function home() {
         <section class="split">
           <div>
             <span class="kicker">Signal Map</span>
-            <h2>Built for Alpha tokens, long-tail tokens, and fast-moving narratives.</h2>
+            <h2>Built for tokenized treasuries, private credit, real estate, commodities, and yield-bearing RWA protocols.</h2>
             <p>
-              The first public build is a frontend prototype. The product direction is an independent agent layer for every chain and every token.
+              The first public build is a focused RWA shell. The product direction is an independent agent layer for tokenized real-world assets across chains and venues.
             </p>
           </div>
           <div class="signal-grid">
             <article class="signal">
-              <strong>Liquidity</strong>
-              <span>Pool depth, withdrawals, slippage paths, venue concentration, and routing quality.</span>
+              <strong>Issuer</strong>
+              <span>Official entity links, docs, disclosures, operational history, and canonical source trail.</span>
             </article>
             <article class="signal">
-              <strong>Supply</strong>
-              <span>Unlock schedules, top holder concentration, treasury wallets, and suspicious transfers.</span>
+              <strong>Collateral</strong>
+              <span>Reserve proof, asset composition, custody model, attestations, and oracle assumptions.</span>
             </article>
             <article class="signal">
               <strong>Source</strong>
-              <span>Team links, docs, GitHub, audits, canonical domains, and contract verification.</span>
+              <span>Legal docs, issuer pages, audits, canonical domains, and contract verification.</span>
             </article>
             <article class="signal">
-              <strong>Attention</strong>
-              <span>Social velocity, KOL clustering, announcement deltas, and hype-to-data mismatch.</span>
+              <strong>Market</strong>
+              <span>Liquidity, volume, venue concentration, redemption windows, and price-to-NAV drift.</span>
             </article>
           </div>
         </section>
@@ -1851,7 +1856,7 @@ function comparePage(id) {
     return compareView(cachedComparison);
   }
 
-  return compareLoadingPage(id, "", "", "Missing compare query. Use a route like /c/aster-vs-cloud?a=ASTER&b=CLOUD.");
+  return compareLoadingPage(id, "", "", "Missing compare query. Use a route like /c/ondo-vs-usdy?a=ONDO&b=USDY.");
 }
 
 function loadRouteCompare(id, leftQuery, rightQuery) {
@@ -2055,23 +2060,23 @@ function docsPage() {
     <section class="docs">
       <h1>DYOR.sh Docs</h1>
       <p>
-        DYOR.sh is an AI-Native research shell. The goal is to scan crypto assets, surface evidence, explain risk, and keep a watch process running after the first report.
+        DYOR.sh is an AI-Native RWA research shell. The goal is to scan tokenized real-world assets, surface evidence, explain unresolved risk, and keep a watch process running after the first report.
       </p>
       <div class="doc-card">
         <h2>Status</h2>
         <div class="flow">
           <article class="flow-step"><code>v0.1</code><span>MVP is live on Cloudflare Pages with Pages Functions.</span></article>
-          <article class="flow-step"><code>Dexscreener</code><span>Current connector for pairs, liquidity, volume, source links, and market structure.</span></article>
-          <article class="flow-step"><code>Next</code><span>Holder distribution, unlock schedules, contract verification, and deeper source/social checks.</span></article>
+          <article class="flow-step"><code>Dexscreener</code><span>Current market connector for pairs, liquidity, volume, source links, and market structure.</span></article>
+          <article class="flow-step"><code>Next</code><span>Issuer docs, reserve/collateral proof, redemption terms, holder distribution, contract verification, and deeper source checks.</span></article>
         </div>
       </div>
       <div class="doc-card">
         <h2>Commands</h2>
         <div class="flow">
-          <article class="flow-step"><code>/scan</code><span>Run token, contract, or project research.</span></article>
+          <article class="flow-step"><code>/scan</code><span>Run RWA asset, contract, issuer, or project research.</span></article>
           <article class="flow-step"><code>/redflags</code><span>List unresolved risks and what would reduce them.</span></article>
-          <article class="flow-step"><code>/watch</code><span>Track liquidity, unlock, wallet, social, and announcement changes.</span></article>
-          <article class="flow-step"><code>/compare</code><span>Compare two projects by market, supply, usage, and source quality.</span></article>
+          <article class="flow-step"><code>/watch</code><span>Track liquidity, issuer, collateral, redemption, wallet, and announcement changes.</span></article>
+          <article class="flow-step"><code>/compare</code><span>Compare two RWA assets by market depth, issuer confidence, source quality, and unresolved risk.</span></article>
         </div>
       </div>
       <div class="doc-card">
@@ -2081,10 +2086,10 @@ function docsPage() {
           <article class="flow-step"><code>/openapi.json</code><span>OpenAPI schema for tools that prefer typed endpoint definitions.</span></article>
           <article class="flow-step"><code>/llms.txt</code><span>Short LLM-readable project guide with commands and API examples.</span></article>
           <article class="flow-step"><code>/.well-known/ai-plugin.json</code><span>Plugin-style discovery manifest pointing agents to the OpenAPI schema.</span></article>
-          <article class="flow-step"><code>/api/scan?q=ASTER</code><span>Live JSON research report with evidence, red flags, and watch triggers.</span></article>
-          <article class="flow-step"><code>/api/redflags?q=ASTER</code><span>Compact red flag checklist with unresolved risks and action items.</span></article>
-          <article class="flow-step"><code>/api/brief?q=ASTER&format=md</code><span>Markdown report brief for agents, bots, docs, and notebooks.</span></article>
-          <article class="flow-step"><code>/api/watch?q=ASTER,CLOUD</code><span>Batch refresh watched tokens with per-item success or failure.</span></article>
+          <article class="flow-step"><code>/api/scan?q=ONDO</code><span>Live JSON RWA research report with evidence, red flags, and watch triggers.</span></article>
+          <article class="flow-step"><code>/api/redflags?q=ONDO</code><span>Compact red flag checklist with unresolved RWA risks and action items.</span></article>
+          <article class="flow-step"><code>/api/brief?q=ONDO&format=md</code><span>Markdown RWA brief for agents, bots, docs, and notebooks.</span></article>
+          <article class="flow-step"><code>/api/watch?q=ONDO,USDY</code><span>Batch refresh watched RWA assets with per-item success or failure.</span></article>
         </div>
       </div>
       <div class="doc-card">
@@ -2094,7 +2099,7 @@ function docsPage() {
             The agent separates facts, inferences, and missing data. Reports should link back to primary sources when live data connectors are added.
           </p>
           <p>
-            DYOR.sh does not provide financial advice, price targets, or buy/sell calls.
+            DYOR.sh does not provide financial advice, investment recommendations, price targets, or yield guarantees.
           </p>
         </div>
       </div>

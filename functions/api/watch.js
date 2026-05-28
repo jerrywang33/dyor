@@ -14,7 +14,7 @@ export async function onRequest({ request }) {
   try {
     const items = await readWatchRequest(request);
     if (!items.length) {
-      return json({ error: "Missing watch queries", message: "Use ?q=ASTER,CLOUD or POST { items: [{ query: 'ASTER' }] }" }, 400);
+      return json({ error: "Missing watch queries", message: "Use ?q=ONDO,USDY or POST { items: [{ query: 'ONDO' }] }" }, 400);
     }
 
     const results = await Promise.all(items.map(refreshItem));
@@ -63,12 +63,17 @@ async function readWatchRequest(request) {
   if (request.method === "GET") {
     const url = new URL(request.url);
     return normalizeWatchItems(
-      splitQueries(url.searchParams.get("q") || url.searchParams.get("query") || url.searchParams.get("tokens")),
+      splitQueries(
+        url.searchParams.get("q") ||
+          url.searchParams.get("query") ||
+          url.searchParams.get("assets") ||
+          url.searchParams.get("tokens"),
+      ),
     );
   }
 
   const body = await request.json().catch(() => ({}));
-  return normalizeWatchItems(body.items || body.watchlist || body.queries || body.q || body.query || body.tokens);
+  return normalizeWatchItems(body.items || body.watchlist || body.queries || body.q || body.query || body.assets || body.tokens);
 }
 
 function normalizeWatchItems(value) {
@@ -83,7 +88,7 @@ function normalizeWatchItems(value) {
 
       if (!item || typeof item !== "object") return null;
 
-      const query = cleanWatchQuery(item.query || item.q || item.token || item.label || item.id);
+      const query = cleanWatchQuery(item.query || item.q || item.asset || item.token || item.issuer || item.label || item.id);
       if (!query) return null;
 
       return {

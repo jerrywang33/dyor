@@ -16,7 +16,7 @@ export async function scanDexscreener(query) {
   const selected = group.pairs.sort(comparePairs).slice(0, 10);
 
   if (!selected.length) {
-    throw new Error("No DEX pairs matched this query");
+    throw new Error("No live RWA market pairs matched this query");
   }
 
   const best = selected[0];
@@ -60,12 +60,13 @@ export async function scanDexscreener(query) {
       confidenceScore: confidence.score,
     },
     metrics: {
+      issuer: links.website ? "Source link found" : "Issuer docs needed",
+      collateral: "Reserve proof pending",
       liquidity: `${money(liquidityUsd)} across ${selected.length} pool${selected.length === 1 ? "" : "s"}`,
-      volume: `${money(volume24h)} 24h`,
-      market: formatMarket(best),
+      redemption: "Terms pending",
+      market: `${pairCount} market pair${pairCount === 1 ? "" : "s"} matched`,
+      venue: `${best.dexId || "venue"} / ${quote.symbol || "quote"}`,
       price: formatPrice(best.priceUsd),
-      social: `${pairCount} DEX pair${pairCount === 1 ? "" : "s"} matched`,
-      source: `${best.dexId || "DEX"} / ${quote.symbol || "quote"}`,
     },
     findings: buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, priceChange24h }),
     evidence: buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume24h }),
@@ -246,9 +247,9 @@ function buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, pri
   if (volumeToLiquidity > 4) {
     findings.push(["mid", `24h volume is high relative to liquidity, which can make execution fragile.`]);
   } else if (volume24h > 0) {
-    findings.push(["low", `24h DEX volume is ${money(volume24h)} on the selected market set.`]);
+    findings.push(["low", `24h market volume is ${money(volume24h)} on the selected RWA market set.`]);
   } else {
-    findings.push(["mid", "No meaningful 24h DEX volume was reported by the matched pools."]);
+    findings.push(["mid", "No meaningful 24h market volume was reported by the matched pools."]);
   }
 
   if (Math.abs(priceChange24h) >= 35) {
@@ -260,14 +261,14 @@ function buildFindings({ best, selected, liquidityUsd, volume24h, pairCount, pri
   }
 
   if (pairCount <= 1) {
-    findings.push(["mid", "Only one DEX pair matched, so market structure is not broadly confirmed."]);
+    findings.push(["mid", "Only one market pair matched, so market structure is not broadly confirmed."]);
   } else {
-    findings.push(["low", `${pairCount} DEX pairs matched; the report used the ${selected.length} deepest pools.`]);
+    findings.push(["low", `${pairCount} market pairs matched; the report used the ${selected.length} deepest pools.`]);
   }
 
-  const dex = best.dexId || "the leading DEX";
+  const dex = best.dexId || "the leading venue";
   const chain = formatChain(best.chainId);
-  findings.push(["mid", `This first live pass uses ${dex} data on ${chain}; holders, unlocks, and socials are still marked for follow-up.`]);
+  findings.push(["mid", `This first live pass uses ${dex} market data on ${chain}; issuer docs, collateral proof, redemption terms, and custody checks remain follow-up surfaces.`]);
 
   return findings.slice(0, 5);
 }
@@ -281,11 +282,11 @@ function buildEvidence({ best, selected, links, pairCount, liquidityUsd, volume2
     identity: [
       ["Chain", formatChain(best.chainId)],
       ["Symbol", base.symbol || "Unknown"],
-      ["Token", shortAddress(base.address)],
+      ["Asset contract", shortAddress(base.address)],
       ["Primary pair", shortAddress(best.pairAddress)],
     ],
     market: [
-      ["Primary DEX", titleCase(best.dexId || "DEX")],
+      ["Primary venue", titleCase(best.dexId || "venue")],
       ["Quote asset", quote.symbol || "Unknown"],
       ["Pool age", formatAge(best.pairCreatedAt)],
       ["24h transactions", `${txns24h.total || 0} (${txns24h.buys || 0} buys / ${txns24h.sells || 0} sells)`],
@@ -305,16 +306,16 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
   if (confidence.score < 55) {
     rows.push({
       tone: "high",
-      label: "Weak identity match",
+      label: "Weak issuer/asset match",
       detail: confidence.summary,
-      action: "Verify contract address, canonical domain, and official social links before using the ticker.",
+      action: "Verify asset contract, issuer domain, legal docs, and official source links before using the ticker.",
     });
   } else if (confidence.score < 78) {
     rows.push({
       tone: "mid",
-      label: "Identity still needs source checks",
+      label: "Issuer identity still needs source checks",
       detail: confidence.summary,
-      action: "Cross-check website, explorer, and social links against the selected base token.",
+      action: "Cross-check website, explorer, docs, and source links against the selected RWA asset contract.",
     });
   }
 
@@ -323,7 +324,7 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
       tone: "high",
       label: "Thin liquidity",
       detail: `Matched pool liquidity is only ${money(liquidityUsd)}.`,
-      action: "Treat execution quality as fragile until deeper venues or liquidity locks are confirmed.",
+      action: "Treat execution quality as fragile until deeper venues, redemptions, or liquidity controls are understood.",
     });
   } else if (liquidityUsd < 250_000) {
     rows.push({
@@ -339,7 +340,7 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
       tone: "high",
       label: "Volume outruns liquidity",
       detail: `24h volume is ${volumeToLiquidity.toFixed(2)}x matched liquidity.`,
-      action: "Review recent candles, slippage, and possible wash or momentum bursts.",
+      action: "Review recent candles, slippage, issuer updates, and possible short-lived flow.",
     });
   } else if (volumeToLiquidity > 4) {
     rows.push({
@@ -362,7 +363,7 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
       tone: "mid",
       label: "Elevated 24h move",
       detail: `Leading pair moved ${percent(priceChange24h)} in 24h.`,
-      action: "Compare the move with news, unlocks, and pool changes.",
+      action: "Compare the move with issuer updates, redemption terms, and pool changes.",
     });
   }
 
@@ -370,7 +371,7 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
     rows.push({
       tone: "mid",
       label: "Single-pool market",
-      detail: "Only one matched DEX pair supports this market identity.",
+      detail: "Only one matched market pair supports this asset identity.",
       action: "Confirm pair creation history and wait for broader venue confirmation when possible.",
     });
   }
@@ -378,26 +379,26 @@ function buildRedFlags({ links, confidence, alternatives, liquidityUsd, volume24
   if (!links.website || !(links.x || links.telegram || links.discord)) {
     rows.push({
       tone: "mid",
-      label: "Incomplete source links",
-      detail: "Dex profile does not expose a full canonical source trail.",
-      action: "Use explorer and official domain checks before relying on social claims.",
+      label: "Incomplete RWA source links",
+      detail: "Market profile does not expose a full issuer, docs, and source trail.",
+      action: "Use explorer, issuer domain, docs, and official source checks before relying on public claims.",
     });
   }
 
   if (alternatives.length) {
     rows.push({
       tone: alternatives.length >= 3 ? "mid" : "low",
-      label: "Ticker ambiguity",
+      label: "Asset ticker ambiguity",
       detail: `${alternatives.length} other search candidate${alternatives.length === 1 ? "" : "s"} matched this query.`,
-      action: "Verify the selected token address before sharing the report.",
+      action: "Verify the selected RWA asset contract before sharing the report.",
     });
   }
 
   rows.push({
     tone: "mid",
-    label: "Supply checks pending",
-    detail: "Holder concentration, unlock schedule, and treasury wallet checks are not connected in this build.",
-    action: "Treat supply-side conclusions as unresolved until holder and unlock connectors are added.",
+    label: "RWA docs pending",
+    detail: "Issuer docs, reserve/collateral proof, redemption terms, holder concentration, and custody checks are not fully connected in this build.",
+    action: "Treat RWA quality conclusions as unresolved until issuer and collateral connectors are added.",
   });
 
   return rows.slice(0, 7);
@@ -419,26 +420,26 @@ function buildConfidence({ query, best, group, links, alternatives, pairCount, l
 
   if (addressMatch) {
     score += 32;
-    reasons.push("Contract address maps directly to the selected base token.");
+    reasons.push("Contract address maps directly to the selected RWA asset.");
   } else if (exactSymbol || exactName) {
     score += 20;
-    reasons.push("Ticker or project name exactly matches the selected token group.");
+    reasons.push("Ticker, issuer, or project name exactly matches the selected RWA asset group.");
   } else if (group.identity >= 40) {
     score += 12;
-    reasons.push("Query partially matches the selected token group.");
+    reasons.push("Query partially matches the selected RWA asset group.");
   }
 
   if (links.website) {
     score += 9;
-    reasons.push("Dexscreener includes a project website source link.");
+    reasons.push("Dexscreener includes an issuer or project website source link.");
   } else {
     score -= 8;
-    reasons.push("No canonical website was reported by the selected DEX profile.");
+    reasons.push("No canonical website was reported by the selected market profile.");
   }
 
   if (links.x || links.telegram || links.discord) {
     score += 6;
-    reasons.push("Social source links are available for follow-up.");
+    reasons.push("Public source links are available for follow-up.");
   }
 
   if (pairCount >= 6) {
@@ -459,7 +460,7 @@ function buildConfidence({ query, best, group, links, alternatives, pairCount, l
     reasons.push(`${sameSymbolAlternatives.length} same-symbol alternative should be checked before relying on ticker alone.`);
   } else if (alternatives.length) {
     score -= Math.min(8, alternatives.length * 2);
-    reasons.push("Other search candidates exist; verify the token address before sharing.");
+    reasons.push("Other search candidates exist; verify the RWA asset contract before sharing.");
   }
 
   const finalScore = clamp(Math.round(score), 8, 96);
@@ -468,10 +469,10 @@ function buildConfidence({ query, best, group, links, alternatives, pairCount, l
     label: finalScore >= 78 ? "High confidence" : finalScore >= 55 ? "Medium confidence" : "Low confidence",
     summary:
       finalScore >= 78
-        ? "Selected token identity is well supported by live DEX evidence."
+        ? "Selected RWA asset identity is well supported by live market evidence."
         : finalScore >= 55
-          ? "Selected token identity is plausible but still needs source checks."
-          : "Selected token identity is weak; verify contract and canonical links.",
+          ? "Selected RWA asset identity is plausible but still needs issuer/source checks."
+          : "Selected RWA asset identity is weak; verify contract, issuer, docs, and canonical links.",
     reasons: reasons.slice(0, 5),
   };
 }
@@ -523,11 +524,11 @@ function buildWatch({ best, links, liquidityUsd, volume24h, pairCount, priceChan
   rows.push({
     tone: links.website && (links.x || links.telegram || links.discord) ? "low" : "mid",
     label: "Source follow-up",
-    value: best.dexId || "DEX",
+    value: best.dexId || "venue",
     detail:
       links.website && (links.x || links.telegram || links.discord)
-        ? "Review website and social links against the token contract before trusting identity."
-        : "Canonical source links are incomplete; use contract-first verification.",
+        ? "Review website, docs, and source links against the RWA asset contract before trusting identity."
+        : "Canonical source links are incomplete; use issuer and contract-first verification.",
   });
 
   return rows;
@@ -540,12 +541,12 @@ function buildAlternatives(groups) {
       const base = best.baseToken || {};
       return {
         label: base.symbol || "UNKNOWN",
-        title: base.name || base.symbol || "Unknown token",
+        title: base.name || base.symbol || "Unknown RWA asset",
         chain: formatChain(best.chainId),
         liquidity: money(group.liquidityUsd),
         volume: `${money(group.volume24h)} 24h`,
         pairs: group.pairs.length,
-        source: best.dexId || "DEX",
+        source: best.dexId || "venue",
         url: safeUrl(best.url),
         address: base.address || "",
       };

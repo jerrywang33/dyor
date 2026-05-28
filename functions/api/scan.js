@@ -12,7 +12,7 @@ export async function onRequest({ request }) {
   try {
     const query = await readQuery(request);
     if (!query) {
-      return json({ error: "Missing token, contract, or project query" }, 400);
+      return json({ error: "Missing RWA asset, contract, issuer, or project query" }, 400);
     }
 
     const report = await scanDexscreener(query);
@@ -31,11 +31,17 @@ export async function onRequest({ request }) {
 async function readQuery(request) {
   if (request.method === "GET") {
     const url = new URL(request.url);
-    return cleanQuery(url.searchParams.get("q") || url.searchParams.get("query"));
+    return cleanQuery(
+      url.searchParams.get("q") ||
+        url.searchParams.get("query") ||
+        url.searchParams.get("asset") ||
+        url.searchParams.get("token") ||
+        url.searchParams.get("issuer"),
+    );
   }
 
   const body = await request.json().catch(() => ({}));
-  return cleanQuery(body.q || body.query || body.token || body.contract);
+  return cleanQuery(body.q || body.query || body.asset || body.token || body.contract || body.issuer);
 }
 
 function json(payload, status = 200) {

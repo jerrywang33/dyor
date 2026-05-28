@@ -3,7 +3,7 @@
   "info": {
     "title": "DYOR.sh API",
     "version": "0.1.0",
-    "description": "AI-Native crypto research shell API for token scans, red flags, comparisons, watch refreshes, and Markdown briefs. Not financial advice."
+    "description": "AI-Native RWA research shell API for tokenized real-world asset scans, red flags, comparisons, watch refreshes, and Markdown briefs. Not financial advice."
   },
   "servers": [
     {
@@ -13,7 +13,7 @@
   "paths": {
     "/api/scan": {
       "get": {
-        "summary": "Run a live token research scan",
+        "summary": "Run a live RWA asset research scan",
         "parameters": [
           {
             "name": "q",
@@ -21,7 +21,15 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ASTER", "/redflags ASTER", "https://dexscreener.com/bsc/..."]
+              "examples": ["ONDO", "/redflags ONDO", "https://dexscreener.com/ethereum/..."]
+            }
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ONDO"]
             }
           }
         ],
@@ -39,7 +47,7 @@
         }
       },
       "post": {
-        "summary": "Run a live token research scan",
+        "summary": "Run a live RWA asset research scan",
         "requestBody": {
           "required": true,
           "content": {
@@ -49,7 +57,10 @@
                 "properties": {
                   "q": {
                     "type": "string",
-                    "examples": ["ASTER"]
+                    "examples": ["ONDO"]
+                  },
+                  "asset": {
+                    "type": "string"
                   },
                   "query": {
                     "type": "string"
@@ -89,7 +100,15 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ASTER", "/redflags ASTER"]
+              "examples": ["ONDO", "/redflags ONDO"]
+            }
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ONDO"]
             }
           },
           {
@@ -133,6 +152,9 @@
                   "query": {
                     "type": "string"
                   },
+                  "asset": {
+                    "type": "string"
+                  },
                   "token": {
                     "type": "string"
                   },
@@ -166,14 +188,14 @@
     },
     "/api/compare": {
       "get": {
-        "summary": "Compare two token research reports",
+        "summary": "Compare two RWA asset research reports",
         "parameters": [
           {
             "name": "a",
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ASTER"]
+              "examples": ["ONDO"]
             }
           },
           {
@@ -181,7 +203,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["CLOUD"]
+              "examples": ["USDY"]
             }
           },
           {
@@ -189,7 +211,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ASTER vs CLOUD"]
+              "examples": ["ONDO vs USDY"]
             }
           }
         ],
@@ -207,7 +229,7 @@
         }
       },
       "post": {
-        "summary": "Compare two token research reports",
+        "summary": "Compare two RWA asset research reports",
         "requestBody": {
           "content": {
             "application/json": {
@@ -244,7 +266,7 @@
     },
     "/api/watch": {
       "get": {
-        "summary": "Batch refresh watched token reports",
+        "summary": "Batch refresh watched RWA asset reports",
         "parameters": [
           {
             "name": "q",
@@ -252,7 +274,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ASTER,CLOUD"]
+              "examples": ["ONDO,USDY"]
             }
           }
         ],
@@ -270,7 +292,7 @@
         }
       },
       "post": {
-        "summary": "Batch refresh watched token reports",
+        "summary": "Batch refresh watched RWA asset reports",
         "requestBody": {
           "content": {
             "application/json": {
@@ -311,7 +333,15 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ASTER", "ASTER vs CLOUD"]
+              "examples": ["ONDO", "ONDO vs USDY"]
+            }
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "examples": ["ONDO"]
             }
           },
           {
@@ -642,6 +672,9 @@
             "type": "string"
           },
           "query": {
+            "type": "string"
+          },
+          "asset": {
             "type": "string"
           }
         }

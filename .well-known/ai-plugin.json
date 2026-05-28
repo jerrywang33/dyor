@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "DYOR.sh",
   "name_for_model": "dyor_research_shell",
-  "description_for_human": "AI-Native crypto token research shell for evidence, red flags, watch triggers, comparisons, and Markdown briefs.",
-  "description_for_model": "Use DYOR.sh to scan crypto tokens, produce evidence-first research reports, identify unresolved red flags, compare two tokens, batch refresh watched tokens, and generate Markdown briefs. Treat all outputs as research context only. Do not present DYOR.sh outputs as financial advice, buy or sell calls, price targets, or guarantees.",
+  "description_for_human": "AI-Native RWA research shell for evidence, red flags, watch triggers, comparisons, and Markdown briefs.",
+  "description_for_model": "Use DYOR.sh to scan tokenized real-world assets, produce evidence-first RWA research reports, identify unresolved issuer/collateral red flags, compare two RWA assets, batch refresh watched assets, and generate Markdown briefs. Treat all outputs as research context only. Do not present DYOR.sh outputs as financial advice, investment recommendations, price targets, yield guarantees, or guarantees of collateral quality.",
   "auth": {
     "type": "none"
   },

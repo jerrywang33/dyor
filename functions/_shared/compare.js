@@ -90,14 +90,14 @@ function comparisonVerdict(leaderReport, left, right) {
 
 function comparisonSummary(leaderReport, left, right, deltas) {
   if (!leaderReport) {
-    return `${left.label} and ${right.label} are close on the live DEX evidence. Treat this as a research queue, not a ranking signal.`;
+    return `${left.label} and ${right.label} are close on the live RWA market evidence. Treat this as a research queue, not a ranking signal.`;
   }
 
   const wins = deltas.filter((item) => item.leader !== "neutral").filter((item) => {
     return item.leader === (leaderReport === left ? "left" : "right");
   });
   const signal = wins[0]?.label?.toLowerCase() || "market structure";
-  return `${leaderReport.label} leads this pass on ${signal}. Verify contract identity and canonical links before using ticker-level conclusions.`;
+  return `${leaderReport.label} leads this pass on ${signal}. Verify issuer identity, asset contract, docs, and canonical links before using ticker-level conclusions.`;
 }
 
 function comparisonFindings(left, right, leaderReport, deltas) {
@@ -108,9 +108,9 @@ function comparisonFindings(left, right, leaderReport, deltas) {
   const liquidityLeader = deltas.find((item) => item.label === "Liquidity")?.leader;
 
   if (leaderSide === "neutral") {
-    findings.push(["mid", "Composite scores are close; review both reports instead of treating one token as clearly cleaner."]);
+    findings.push(["mid", "Composite scores are close; review both reports instead of treating one RWA asset as clearly cleaner."]);
   } else {
-    findings.push(["low", `${leaderReport.label} has the stronger composite profile across live DEX risk, identity confidence, and market depth.`]);
+    findings.push(["low", `${leaderReport.label} has the stronger composite profile across live RWA market risk, issuer confidence, and market depth.`]);
   }
 
   if (riskLeader !== "neutral") {
@@ -120,15 +120,15 @@ function comparisonFindings(left, right, leaderReport, deltas) {
 
   if (confidenceLeader !== "neutral") {
     const winner = confidenceLeader === "left" ? left : right;
-    findings.push(["mid", `${winner.label} has stronger identity confidence; still verify the token address against official links.`]);
+    findings.push(["mid", `${winner.label} has stronger issuer confidence; still verify the asset contract against official links and docs.`]);
   }
 
   if (liquidityLeader !== "neutral") {
     const winner = liquidityLeader === "left" ? left : right;
-    findings.push(["low", `${winner.label} shows deeper matched liquidity on the selected DEX market set.`]);
+    findings.push(["low", `${winner.label} shows deeper matched liquidity on the selected RWA market set.`]);
   }
 
-  findings.push(["mid", "Comparison is based on market and source evidence only; holders, unlocks, and deeper social checks remain follow-up surfaces."]);
+  findings.push(["mid", "Comparison is based on market and source evidence only; issuer docs, reserve/collateral proof, redemption terms, custody, and holder checks remain follow-up surfaces."]);
 
   return findings.slice(0, 5);
 }

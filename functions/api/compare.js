@@ -13,7 +13,7 @@ export async function onRequest({ request }) {
   try {
     const pair = await readCompareRequest(request);
     if (!pair) {
-      return json({ error: "Missing compare query", message: "Use ?a=ASTER&b=CLOUD or ?q=ASTER vs CLOUD" }, 400);
+      return json({ error: "Missing compare query", message: "Use ?a=ONDO&b=USDY or ?q=ONDO vs USDY" }, 400);
     }
 
     const [left, right] = await Promise.all(pair.map((query) => scanDexscreener(query)));

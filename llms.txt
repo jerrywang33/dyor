@@ -1,8 +1,8 @@
 # DYOR.sh
 
-DYOR.sh is an AI-Native crypto research shell for token due diligence. It returns research briefs, unresolved risk checks, source links, watch triggers, and comparison summaries. It does not provide financial advice, price targets, or buy/sell calls.
+DYOR.sh is an AI-Native RWA research shell for tokenized real-world asset due diligence. It returns research briefs, unresolved issuer/collateral risk checks, source links, watch triggers, and comparison summaries. It does not provide financial advice, investment recommendations, price targets, or yield guarantees.
 
-Status: MVP v0.1 is live on Cloudflare Pages with Pages Functions. The first live connector is Dexscreener.
+Status: MVP v0.1 is live on Cloudflare Pages with Pages Functions. The first live connector is Dexscreener as a market-data source for RWA-linked assets.
 
 ## Primary URLs
 
@@ -12,29 +12,29 @@ Status: MVP v0.1 is live on Cloudflare Pages with Pages Functions. The first liv
 - OpenAPI schema: https://dyor.sh/openapi.json
 - AI plugin manifest: https://dyor.sh/.well-known/ai-plugin.json
 - Sitemap: https://dyor.sh/sitemap.xml
-- Markdown brief example: https://dyor.sh/api/brief?q=ASTER&format=md
+- Markdown brief example: https://dyor.sh/api/brief?q=ONDO&format=md
 
 ## Commands
 
-- `/scan ASTER`: resolve a token, contract, project, Dexscreener URL, or explorer URL into a structured report.
-- `/redflags ASTER`: focus on unresolved risks and what would reduce them.
-- `/watch ASTER`: scan and pin a token into the local research queue.
-- `/compare ASTER CLOUD`: compare two projects by risk, identity confidence, liquidity, volume, and market coverage.
+- `/scan ONDO`: resolve an RWA asset, contract, issuer, project, Dexscreener URL, or explorer URL into a structured report.
+- `/redflags ONDO`: focus on unresolved RWA risks and what would reduce them.
+- `/watch ONDO`: scan and pin an RWA asset into the local research queue.
+- `/compare ONDO USDY`: compare two RWA assets by risk, issuer identity confidence, liquidity, volume, and market coverage.
 
 ## API Endpoints
 
-- `GET /api/scan?q=ASTER`: JSON research report.
-- `POST /api/scan` with `{ "q": "ASTER" }`: JSON research report.
-- `GET /api/redflags?q=ASTER`: compact JSON red flag checklist.
-- `GET /api/redflags?q=ASTER&format=md`: Markdown red flag checklist.
-- `GET /api/compare?a=ASTER&b=CLOUD`: JSON comparison.
-- `GET /api/watch?q=ASTER,CLOUD`: batch watch refresh.
-- `POST /api/watch` with `{ "items": [{ "id": "aster", "label": "ASTER", "query": "ASTER" }] }`: batch watch refresh.
-- `GET /api/brief?q=ASTER&format=md`: Markdown research report.
-- `GET /api/brief?a=ASTER&b=CLOUD&format=md`: Markdown comparison brief.
+- `GET /api/scan?q=ONDO`: JSON RWA research report.
+- `POST /api/scan` with `{ "q": "ONDO" }`: JSON RWA research report.
+- `GET /api/redflags?q=ONDO`: compact JSON red flag checklist.
+- `GET /api/redflags?q=ONDO&format=md`: Markdown red flag checklist.
+- `GET /api/compare?a=ONDO&b=USDY`: JSON RWA comparison.
+- `GET /api/watch?q=ONDO,USDY`: batch watch refresh.
+- `POST /api/watch` with `{ "items": [{ "id": "ondo", "label": "ONDO", "query": "ONDO" }] }`: batch watch refresh.
+- `GET /api/brief?q=ONDO&format=md`: Markdown RWA research report.
+- `GET /api/brief?a=ONDO&b=USDY&format=md`: Markdown RWA comparison brief.
 - `GET /api/capabilities`: machine-readable commands and endpoints.
 - `GET /api/manifest`: alias for `/api/capabilities`.
 
 ## Data Notes
 
-The current live connector is Dexscreener. Reports include market evidence, chain explorer links, identity confidence, structured red flags, watch triggers, alternatives, and source links when available. Holder distribution, unlock schedules, contract verification, and deeper social checks are planned follow-up connectors.
+The current live connector is Dexscreener. Reports include market evidence, chain explorer links, issuer identity confidence, structured red flags, watch triggers, alternatives, and source links when available. Issuer docs, reserve/collateral proof, redemption terms, holder distribution, custody, contract verification, and deeper source checks are planned follow-up connectors.

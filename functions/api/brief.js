@@ -14,7 +14,7 @@ export async function onRequest({ request }) {
   try {
     const input = await readBriefRequest(request);
     if (!input.query && !input.pair) {
-      return json({ error: "Missing brief query", message: "Use ?q=ASTER or ?a=ASTER&b=CLOUD" }, 400);
+      return json({ error: "Missing brief query", message: "Use ?q=ONDO or ?a=ONDO&b=USDY" }, 400);
     }
 
     if (input.pair) {
@@ -47,7 +47,15 @@ async function readBriefRequest(request) {
       url.searchParams.get("q") || url.searchParams.get("query"),
     );
     return {
-      query: pair ? "" : cleanBriefQuery(url.searchParams.get("q") || url.searchParams.get("query") || url.searchParams.get("token")),
+      query: pair
+        ? ""
+        : cleanBriefQuery(
+            url.searchParams.get("q") ||
+              url.searchParams.get("query") ||
+              url.searchParams.get("asset") ||
+              url.searchParams.get("token") ||
+              url.searchParams.get("issuer"),
+          ),
       pair,
       format: cleanFormat(url.searchParams.get("format")),
     };
@@ -56,7 +64,7 @@ async function readBriefRequest(request) {
   const body = await request.json().catch(() => ({}));
   const pair = normalizePair(body.a || body.left, body.b || body.right, body.q || body.query || body.compare);
   return {
-    query: pair ? "" : cleanBriefQuery(body.q || body.query || body.token || body.contract),
+    query: pair ? "" : cleanBriefQuery(body.q || body.query || body.asset || body.token || body.contract || body.issuer),
     pair,
     format: cleanFormat(body.format),
   };
