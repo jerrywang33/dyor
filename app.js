@@ -1,110 +1,315 @@
 const samples = [
   {
-    id: "gold-rwa",
-    label: "Gold RWA",
+    id: "xaut",
+    label: "XAUT",
+    aliases: ["Tether Gold", "XAUt", "Tether Gold XAUT"],
     chain: "Ethereum / multi-chain",
-    title: "Tokenized Gold",
+    title: "Tether Gold",
     prototypeOnly: true,
-    risk: 34,
-    verdict: "Verify reserves and redemption",
+    risk: 42,
+    verdict: "Verify gold custody and redemption",
     metrics: {
-      issuer: "Bullion issuer review",
-      collateral: "Allocated gold proof",
-      liquidity: "Deep market category",
-      redemption: "Issuer-specific terms",
-      market: "Commodity-linked",
+      issuer: "TG Commodities / Tether",
+      collateral: "1 oz gold claim",
+      liquidity: "Large gold RWA",
+      redemption: "Platform terms",
+      market: "Tokenized gold",
     },
     numbers: {
-      liquidityUsd: 6800000,
-      volume24h: 2100000,
-      pairCount: 12,
-      priceChange24h: 0.6,
-      confidenceScore: 82,
+      liquidityUsd: 8400000,
+      volume24h: 1800000,
+      pairCount: 9,
+      priceChange24h: 0.4,
+      confidenceScore: 78,
     },
     confidence: {
-      score: 82,
+      score: 78,
       label: "High confidence",
-      summary: "Tokenized gold is a mature RWA category, but each product still depends on issuer, vault, and redemption terms.",
-      reasons: ["Compare issuer docs, vault attestations, redemption rules, and contract provenance across XAUT, PAXG, and similar products."],
+      summary: "Tether Gold is a major tokenized gold product, but the research still depends on issuer terms, vault custody, and redemption mechanics.",
+      reasons: ["Verify Tether Gold terms, gold backing attestations, vault structure, supported chains, and redemption rules."],
     },
     findings: [
-      ["low", "Tokenized gold has a clear underlying asset class and relatively mature market structure."],
-      ["mid", "Reserve proof, vault operator, audit cadence, and redemption minimums must be verified per issuer."],
-      ["mid", "Liquidity can fragment across XAUT, PAXG, wrappers, and venue-specific routes."],
-      ["low", "This is a useful baseline category for testing commodity-backed RWA workflows."],
+      ["low", "XAUT is one of the best-known tokenized gold products and has a clear physical-gold reference asset."],
+      ["mid", "Diligence should verify issuer terms, vault custody, attestations, and whether redemption rights apply to the user profile."],
+      ["mid", "Liquidity and venue coverage can differ materially from spot-gold market depth."],
+      ["low", "Useful as a commodity-backed RWA baseline against PAXG and treasury products."],
     ],
   },
   {
-    id: "openai-preipo-rwa",
-    label: "OpenAI Pre-IPO RWA",
-    chain: "Private markets / tokenized SPV",
-    title: "OpenAI Pre-IPO Exposure",
+    id: "paxg",
+    label: "PAXG",
+    aliases: ["Pax Gold", "Paxos Gold"],
+    chain: "Ethereum",
+    title: "Paxos Gold",
     prototypeOnly: true,
-    risk: 76,
-    verdict: "High diligence required",
+    risk: 35,
+    verdict: "Verify allocation and issuer terms",
     metrics: {
-      issuer: "SPV/broker identity",
-      collateral: "Private share claim",
-      liquidity: "Secondary-market limited",
-      redemption: "Lockup/transfer limits",
-      market: "Private AI equity",
+      issuer: "Paxos Trust Company",
+      collateral: "Allocated gold bars",
+      liquidity: "Mature gold RWA",
+      redemption: "Paxos terms",
+      market: "Tokenized gold",
     },
     numbers: {
-      liquidityUsd: 0,
-      volume24h: 0,
-      pairCount: 0,
-      priceChange24h: 0,
-      confidenceScore: 38,
+      liquidityUsd: 9200000,
+      volume24h: 2400000,
+      pairCount: 11,
+      priceChange24h: 0.5,
+      confidenceScore: 84,
     },
     confidence: {
-      score: 38,
-      label: "Low confidence",
-      summary: "Pre-IPO exposure is highly document-driven and should not be treated as official company equity unless the legal structure is proven.",
-      reasons: ["Verify SPV ownership, transfer restrictions, investor eligibility, valuation basis, and whether the issuer has any direct company relationship."],
+      score: 84,
+      label: "High confidence",
+      summary: "PAXG is a regulated tokenized gold product, but the report still needs reserve, redemption, and custody review.",
+      reasons: ["Paxos describes PAXG as backed by one fine troy ounce of London Good Delivery gold held in LBMA vaults."],
     },
     findings: [
-      ["high", "Private-company RWA exposure depends on SPV documents, cap-table rights, transfer limits, and custody chain."],
-      ["high", "Any product implying direct OpenAI equity should be treated as unverified until legal docs prove the claim."],
-      ["mid", "Liquidity is usually limited and may depend on off-chain settlement or private secondary-market access."],
-      ["mid", "Valuation, fees, lockups, and investor eligibility are first-order diligence items."],
+      ["low", "PAXG has a clear commodity backing model and a widely recognized issuer."],
+      ["mid", "Reserve reports, bar allocation lookup, redemption rules, and user eligibility should still be checked."],
+      ["mid", "Compare venue depth and redemption mechanics against XAUT before treating gold tokens as interchangeable."],
+      ["low", "Good benchmark for regulated commodity-backed RWA diligence."],
     ],
   },
   {
-    id: "us-equities-rwa",
-    label: "U.S. Equities RWA",
-    chain: "Tokenized brokerage / multi-chain",
-    title: "Tokenized U.S. Equities",
+    id: "buidl",
+    label: "BUIDL",
+    aliases: ["BlackRock BUIDL", "BlackRock USD Institutional Digital Liquidity Fund"],
+    chain: "Ethereum / multi-chain",
+    title: "BlackRock USD Institutional Digital Liquidity Fund",
     prototypeOnly: true,
-    risk: 58,
-    verdict: "Check broker and custody model",
+    risk: 31,
+    verdict: "Institutional fund diligence",
     metrics: {
-      issuer: "Broker/depository mapping",
-      collateral: "Share custody proof",
-      liquidity: "Session dependent",
-      redemption: "KYC and market hours",
-      market: "Equity-linked",
+      issuer: "BlackRock / Securitize",
+      collateral: "Treasury / cash equivalents",
+      liquidity: "Qualified investor market",
+      redemption: "Fund subscription terms",
+      market: "Tokenized money fund",
     },
     numbers: {
-      liquidityUsd: 1250000,
-      volume24h: 360000,
-      pairCount: 5,
-      priceChange24h: 1.1,
-      confidenceScore: 58,
+      liquidityUsd: 18500000,
+      volume24h: 4300000,
+      pairCount: 7,
+      priceChange24h: 0.1,
+      confidenceScore: 88,
     },
     confidence: {
-      score: 58,
+      score: 88,
+      label: "High confidence",
+      summary: "BUIDL is a high-signal institutional tokenized fund, but access, transfer agent, subscription, redemption, and distribution details matter.",
+      reasons: ["BlackRock launched BUIDL with Securitize as transfer agent and tokenization platform for tokenized fund shares."],
+    },
+    findings: [
+      ["low", "BUIDL is one of the strongest reference assets for institutional tokenized fund research."],
+      ["mid", "Diligence should verify investor eligibility, transfer restrictions, distribution mechanics, and Securitize records."],
+      ["mid", "Compare fund structure, eligible holders, and redemption terms against OUSG and other tokenized treasury products."],
+      ["low", "Useful as the benchmark profile for tokenized money-market and treasury-fund workflows."],
+    ],
+  },
+  {
+    id: "ousg",
+    label: "OUSG",
+    aliases: ["Ondo OUSG", "Ondo Short-Term US Government Treasuries"],
+    chain: "Ethereum / Polygon / Solana / XRPL",
+    title: "Ondo Short-Term US Government Treasuries",
+    prototypeOnly: true,
+    risk: 43,
+    verdict: "Verify qualified access and redemptions",
+    metrics: {
+      issuer: "Ondo Finance",
+      collateral: "Short-term US Treasuries",
+      liquidity: "Treasury product market",
+      redemption: "24/7 tokenized terms",
+      market: "Tokenized treasuries",
+    },
+    numbers: {
+      liquidityUsd: 7200000,
+      volume24h: 1150000,
+      pairCount: 6,
+      priceChange24h: 0.1,
+      confidenceScore: 76,
+    },
+    confidence: {
+      score: 76,
       label: "Medium confidence",
-      summary: "Tokenized equities can be researchable, but broker, depository, transfer-agent, and redemption models vary materially.",
-      reasons: ["Check whether the token represents direct share ownership, synthetic exposure, a broker ledger claim, or a wrapper with limited redemption."],
+      summary: "OUSG is a known tokenized treasury product, with access and redemption mechanics that need issuer-doc review.",
+      reasons: ["Ondo docs describe OUSG as exposure primarily to short-term US Treasuries and related government securities."],
     },
     findings: [
-      ["mid", "U.S. equities RWA products require broker, custody, and corporate-action handling review."],
-      ["mid", "Market hours, KYC restrictions, jurisdictional access, and redemption paths can dominate user experience."],
-      ["mid", "Price-to-NAV drift and off-chain settlement risk should be watched during volatile sessions."],
-      ["low", "This category is a strong fit for comparison workflows across issuer models and venue design."],
+      ["low", "OUSG is a credible tokenized treasury reference asset with clear issuer documentation."],
+      ["mid", "Access restrictions, supported chains, redemption windows, and bridge assumptions require review."],
+      ["mid", "Compare collateral mix, fund wrapper, and qualified-investor requirements against BUIDL."],
+      ["low", "Good sample for tokenized treasury research and watch workflows."],
+    ],
+  },
+  {
+    id: "dtsla",
+    label: "dTSLA",
+    aliases: ["Dinari dShares", "Tesla dShare", "dShares"],
+    chain: "Arbitrum / Base / multi-chain",
+    title: "Dinari Tesla dShare",
+    prototypeOnly: true,
+    risk: 61,
+    verdict: "Verify equity backing and market rules",
+    metrics: {
+      issuer: "Dinari",
+      collateral: "1:1 public equity backing",
+      liquidity: "Equity-session dependent",
+      redemption: "KYC / broker workflow",
+      market: "Tokenized US stock",
+    },
+    numbers: {
+      liquidityUsd: 980000,
+      volume24h: 280000,
+      pairCount: 4,
+      priceChange24h: 1.8,
+      confidenceScore: 64,
+    },
+    confidence: {
+      score: 64,
+      label: "Medium confidence",
+      summary: "Dinari dShares are a known tokenized-equity model, but each ticker needs issuer, backing, corporate action, and redemption review.",
+      reasons: ["Dinari describes dShares as tokenized public-market securities that are 1:1 backed."],
+    },
+    findings: [
+      ["mid", "dTSLA is a representative Dinari dShare for tokenized US equity research."],
+      ["mid", "Diligence should verify backing assets, broker/custodian model, KYC eligibility, and corporate-action handling."],
+      ["mid", "Off-hours token trading can diverge from the underlying TSLA market until traditional venues reopen."],
+      ["low", "Useful as the tokenized-equities sample alongside treasury and gold products."],
     ],
   },
 ];
+
+const sampleSupplements = {
+  xaut: {
+    source: "RWA asset profile",
+    live: false,
+    evidence: {
+      identity: [
+        ["Asset", "Tether Gold"],
+        ["Ticker", "XAUT / XAUt"],
+        ["Issuer", "TG Commodities / Tether"],
+      ],
+      market: [
+        ["Underlying", "Physical gold"],
+        ["Primary checks", "Issuer terms, vault custody, redemption, contract provenance"],
+        ["Risk focus", "Vault claim quality, eligibility, and price-to-spot drift"],
+      ],
+      links: [
+        { label: "Tether Gold FAQ", url: "https://gold.tether.to/faq" },
+        { label: "Tether Gold", url: "https://gold.tether.to/" },
+      ],
+    },
+    links: {
+      website: "https://gold.tether.to/",
+      docs: "https://gold.tether.to/faq",
+    },
+    alternatives: [{ label: "PAXG", reason: "Regulated tokenized-gold comparator" }],
+  },
+  paxg: {
+    source: "RWA asset profile",
+    live: false,
+    evidence: {
+      identity: [
+        ["Asset", "Paxos Gold"],
+        ["Ticker", "PAXG"],
+        ["Issuer", "Paxos Trust Company"],
+      ],
+      market: [
+        ["Underlying", "London Good Delivery gold"],
+        ["Primary checks", "Reserve report, bar allocation, redemption, user eligibility"],
+        ["Risk focus", "Custody claim, fees, and price-to-spot drift"],
+      ],
+      links: [
+        { label: "Paxos Gold", url: "https://www.paxos.com/paxgold/" },
+        { label: "PAXG FAQ", url: "https://www.paxos.com/frequently-asked-questions/paxos-gold" },
+      ],
+    },
+    links: {
+      website: "https://www.paxos.com/paxgold/",
+      faq: "https://www.paxos.com/frequently-asked-questions/paxos-gold",
+    },
+    alternatives: [{ label: "XAUT", reason: "Tokenized-gold comparator with different issuer terms" }],
+  },
+  buidl: {
+    source: "RWA asset profile",
+    live: false,
+    evidence: {
+      identity: [
+        ["Asset", "BlackRock USD Institutional Digital Liquidity Fund"],
+        ["Ticker", "BUIDL"],
+        ["Tokenization platform", "Securitize"],
+      ],
+      market: [
+        ["Underlying", "Institutional liquidity fund exposure"],
+        ["Primary checks", "Eligibility, transfer agent records, fund docs, redemption, distribution mechanics"],
+        ["Risk focus", "Access restrictions and fund-structure details"],
+      ],
+      links: [
+        { label: "Securitize BUIDL", url: "https://securitize.io/blackrock/buidl" },
+        { label: "BUIDL launch release", url: "https://securitize.io/learn/press/blackrock-launches-first-tokenized-fund-buidl-on-the-ethereum-network" },
+      ],
+    },
+    links: {
+      website: "https://securitize.io/blackrock/buidl",
+      launch: "https://securitize.io/learn/press/blackrock-launches-first-tokenized-fund-buidl-on-the-ethereum-network",
+    },
+    alternatives: [{ label: "OUSG", reason: "Tokenized treasury product with different wrapper and access model" }],
+  },
+  ousg: {
+    source: "RWA asset profile",
+    live: false,
+    evidence: {
+      identity: [
+        ["Asset", "Ondo Short-Term US Government Treasuries"],
+        ["Ticker", "OUSG"],
+        ["Issuer", "Ondo Finance / Ondo I LP"],
+      ],
+      market: [
+        ["Underlying", "Short-term US Treasuries and related government securities"],
+        ["Primary checks", "Eligibility, legal docs, portfolio composition, mint/redeem limits, supported chains"],
+        ["Risk focus", "Qualified access, fund wrapper, redemption limits, and bridge assumptions"],
+      ],
+      links: [
+        { label: "Ondo OUSG", url: "https://ondo.finance/ousg" },
+        { label: "OUSG docs", url: "https://docs.ondo.finance/qualified-access-products/ousg" },
+      ],
+    },
+    links: {
+      website: "https://ondo.finance/ousg",
+      docs: "https://docs.ondo.finance/qualified-access-products/ousg",
+    },
+    alternatives: [{ label: "BUIDL", reason: "Institutional tokenized fund comparator" }],
+  },
+  dtsla: {
+    source: "RWA asset profile",
+    live: false,
+    evidence: {
+      identity: [
+        ["Asset", "Dinari Tesla dShare"],
+        ["Ticker", "dTSLA"],
+        ["Issuer", "Dinari"],
+      ],
+      market: [
+        ["Underlying", "Tesla public equity exposure"],
+        ["Primary checks", "Backing assets, broker/custodian model, KYC, corporate actions, redemption"],
+        ["Risk focus", "Market-hours drift, eligible jurisdictions, and off-chain settlement workflow"],
+      ],
+      links: [
+        { label: "Dinari dShares", url: "https://dinari.com/dshares" },
+        { label: "Dinari trading hours", url: "https://docs.dinari.com/docs/trading-hours" },
+      ],
+    },
+    links: {
+      website: "https://dinari.com/dshares",
+      docs: "https://docs.dinari.com/docs/trading-hours",
+    },
+    alternatives: [{ label: "BUIDL", reason: "Institutional fund sample with a different legal and market structure" }],
+  },
+};
+
+samples.forEach((sample) => Object.assign(sample, sampleSupplements[sample.id] || {}));
 
 const defaultScan = samples[0];
 const WATCHLIST_KEY = "dyor.watchlist.v1";
@@ -342,7 +547,6 @@ function scanFor(value) {
 
   const query = normalizeQuery(value);
   if (!query) return state.active;
-  if (query.startsWith("0x")) return samples[2];
   return (
     {
       id: query.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "scan",
@@ -377,7 +581,16 @@ function sampleFor(value) {
     samples.find((sample) => {
       const label = sample.label.toLowerCase();
       const title = sample.title.toLowerCase();
-      return query === label || query === title || label.includes(query) || title.includes(query) || query.includes(label);
+      const aliases = Array.isArray(sample.aliases) ? sample.aliases.map((alias) => alias.toLowerCase()) : [];
+      return (
+        query === label ||
+        query === title ||
+        aliases.includes(query) ||
+        label.includes(query) ||
+        title.includes(query) ||
+        aliases.some((alias) => alias.includes(query) || query.includes(alias)) ||
+        query.includes(label)
+      );
     }) || null
   );
 }
@@ -825,13 +1038,13 @@ function compareFor(leftQuery, rightQuery) {
       label: `${left.label} vs ${right.label}`,
       verdict: compareVerdict(left, right),
       summary: compareSummary(left, right),
-      source: "RWA category profile",
+      source: "RWA asset profile",
       scores: compareScores(left, right),
       left,
       right,
       deltas: compareDeltas(left, right),
       findings: [
-        ["mid", "Category comparison uses local RWA sample profiles as a research scaffold."],
+        ["mid", "Asset comparison uses local RWA sample profiles as a research scaffold."],
         ["mid", "Use issuer docs, legal structure, custody, collateral proof, and market connectors before using any conclusion outside this shell."],
       ],
     },
@@ -1612,7 +1825,9 @@ function scanPanel() {
     ? `compare via ${comparison.source || "market API"}`
     : scan.live
       ? `live via ${scan.source || "market API"}`
-      : "prototype profile";
+      : scan.source
+        ? `profile via ${scan.source}`
+        : "prototype profile";
   return `
     <div class="terminal ${state.loading ? "loading" : ""}">
       <div class="terminal-top">
@@ -1644,9 +1859,9 @@ function scanPanel() {
               `<button class="chip" type="button" data-sample="${sample.label}" ${state.loading ? "disabled" : ""}>${sample.label}</button>`,
           )
           .join("")}
-        <button class="chip chip-compare" type="button" data-sample="Gold RWA vs U.S. Equities RWA" ${state.loading ? "disabled" : ""}>Gold vs Equities</button>
-        <button class="chip chip-watch" type="button" data-sample="/watch Gold RWA" ${state.loading ? "disabled" : ""}>/watch Gold RWA</button>
-        <button class="chip chip-redflags" type="button" data-sample="/redflags OpenAI Pre-IPO RWA" ${state.loading ? "disabled" : ""}>/redflags Pre-IPO</button>
+        <button class="chip chip-compare" type="button" data-sample="BUIDL vs OUSG" ${state.loading ? "disabled" : ""}>BUIDL vs OUSG</button>
+        <button class="chip chip-watch" type="button" data-sample="/watch XAUT" ${state.loading ? "disabled" : ""}>/watch XAUT</button>
+        <button class="chip chip-redflags" type="button" data-sample="/redflags dTSLA" ${state.loading ? "disabled" : ""}>/redflags dTSLA</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       ${
@@ -2143,10 +2358,10 @@ function docsPage() {
           <article class="flow-step"><code>/openapi.json</code><span>OpenAPI schema for tools that prefer typed endpoint definitions.</span></article>
           <article class="flow-step"><code>/llms.txt</code><span>Short LLM-readable project guide with commands and API examples.</span></article>
           <article class="flow-step"><code>/.well-known/ai-plugin.json</code><span>Plugin-style discovery manifest pointing agents to the OpenAPI schema.</span></article>
-          <article class="flow-step"><code>/api/scan?q=Gold%20RWA</code><span>JSON RWA research report with evidence, red flags, and watch triggers.</span></article>
-          <article class="flow-step"><code>/api/redflags?q=OpenAI%20Pre-IPO%20RWA</code><span>Compact red flag checklist with unresolved RWA risks and action items.</span></article>
-          <article class="flow-step"><code>/api/brief?q=U.S.%20Equities%20RWA&format=md</code><span>Markdown RWA brief for agents, bots, docs, and notebooks.</span></article>
-          <article class="flow-step"><code>/api/watch?q=Gold%20RWA,U.S.%20Equities%20RWA</code><span>Batch refresh watched RWA assets with per-item success or failure.</span></article>
+          <article class="flow-step"><code>/api/scan?q=XAUT</code><span>JSON RWA research report with evidence, red flags, and watch triggers.</span></article>
+          <article class="flow-step"><code>/api/redflags?q=BUIDL</code><span>Compact red flag checklist with unresolved RWA risks and action items.</span></article>
+          <article class="flow-step"><code>/api/brief?q=dTSLA&format=md</code><span>Markdown RWA brief for agents, bots, docs, and notebooks.</span></article>
+          <article class="flow-step"><code>/api/watch?q=XAUT,PAXG,BUIDL,OUSG,dTSLA</code><span>Batch refresh watched RWA assets with per-item success or failure.</span></article>
         </div>
       </div>
       <div class="doc-card">

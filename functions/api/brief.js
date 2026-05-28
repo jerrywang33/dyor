@@ -14,7 +14,7 @@ export async function onRequest({ request }) {
   try {
     const input = await readBriefRequest(request);
     if (!input.query && !input.pair) {
-      return json({ error: "Missing brief query", message: "Use ?q=Gold%20RWA or ?a=Gold%20RWA&b=U.S.%20Equities%20RWA" }, 400);
+      return json({ error: "Missing brief query", message: "Use ?q=XAUT or ?a=BUIDL&b=OUSG" }, 400);
     }
 
     if (input.pair) {

@@ -13,7 +13,7 @@ export async function onRequest({ request }) {
   try {
     const pair = await readCompareRequest(request);
     if (!pair) {
-      return json({ error: "Missing compare query", message: "Use ?a=Gold%20RWA&b=U.S.%20Equities%20RWA or ?q=Gold RWA vs U.S. Equities RWA" }, 400);
+      return json({ error: "Missing compare query", message: "Use ?a=BUIDL&b=OUSG or ?q=BUIDL vs OUSG" }, 400);
     }
 
     const [left, right] = await Promise.all(pair.map((query) => scanDexscreener(query)));

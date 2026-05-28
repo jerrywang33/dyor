@@ -21,7 +21,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA", "/redflags OpenAI Pre-IPO RWA", "https://dexscreener.com/ethereum/..."]
+              "examples": ["XAUT", "/redflags BUIDL", "https://dexscreener.com/ethereum/..."]
             }
           },
           {
@@ -29,7 +29,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA"]
+              "examples": ["XAUT"]
             }
           }
         ],
@@ -57,7 +57,7 @@
                 "properties": {
                   "q": {
                     "type": "string",
-                    "examples": ["Gold RWA"]
+                    "examples": ["XAUT"]
                   },
                   "asset": {
                     "type": "string"
@@ -100,7 +100,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["OpenAI Pre-IPO RWA", "/redflags OpenAI Pre-IPO RWA"]
+              "examples": ["BUIDL", "/redflags dTSLA"]
             }
           },
           {
@@ -108,7 +108,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["OpenAI Pre-IPO RWA"]
+              "examples": ["BUIDL"]
             }
           },
           {
@@ -195,7 +195,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA"]
+              "examples": ["BUIDL"]
             }
           },
           {
@@ -203,7 +203,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["U.S. Equities RWA"]
+              "examples": ["OUSG"]
             }
           },
           {
@@ -211,7 +211,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA vs U.S. Equities RWA"]
+              "examples": ["BUIDL vs OUSG"]
             }
           }
         ],
@@ -274,7 +274,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA,U.S. Equities RWA"]
+              "examples": ["XAUT,PAXG,BUIDL,OUSG,dTSLA"]
             }
           }
         ],
@@ -333,7 +333,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA", "Gold RWA vs U.S. Equities RWA"]
+              "examples": ["XAUT", "BUIDL vs OUSG"]
             }
           },
           {
@@ -341,7 +341,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["Gold RWA"]
+              "examples": ["XAUT"]
             }
           },
           {
