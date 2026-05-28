@@ -1,104 +1,107 @@
 const samples = [
   {
-    id: "ondo",
-    label: "ONDO",
+    id: "gold-rwa",
+    label: "Gold RWA",
     chain: "Ethereum / multi-chain",
-    title: "Ondo Finance",
-    risk: 48,
-    verdict: "Review issuer and liquidity",
+    title: "Tokenized Gold",
+    prototypeOnly: true,
+    risk: 34,
+    verdict: "Verify reserves and redemption",
     metrics: {
-      issuer: "Docs required",
-      collateral: "Reserve proof review",
-      liquidity: "Active market depth",
-      redemption: "Terms watch",
-      market: "Institutional narrative",
+      issuer: "Bullion issuer review",
+      collateral: "Allocated gold proof",
+      liquidity: "Deep market category",
+      redemption: "Issuer-specific terms",
+      market: "Commodity-linked",
     },
     numbers: {
-      liquidityUsd: 1450000,
-      volume24h: 620000,
-      pairCount: 8,
-      priceChange24h: 3.2,
-      confidenceScore: 76,
+      liquidityUsd: 6800000,
+      volume24h: 2100000,
+      pairCount: 12,
+      priceChange24h: 0.6,
+      confidenceScore: 82,
     },
     confidence: {
-      score: 76,
-      label: "Medium confidence",
-      summary: "Issuer identity is recognizable, but asset-level docs and redemption terms still need review.",
-      reasons: ["Issuer website, asset contract, fund docs, and custody disclosures should be cross-checked."],
+      score: 82,
+      label: "High confidence",
+      summary: "Tokenized gold is a mature RWA category, but each product still depends on issuer, vault, and redemption terms.",
+      reasons: ["Compare issuer docs, vault attestations, redemption rules, and contract provenance across XAUT, PAXG, and similar products."],
     },
     findings: [
-      ["low", "Matched on-chain markets show enough depth for a first-pass RWA liquidity review."],
-      ["mid", "Asset-level diligence should verify issuer docs, reserve/collateral claims, and redemption mechanics."],
-      ["mid", "Market depth is still concentrated around a small number of routing paths."],
-      ["low", "There is enough public structure to add the asset to an ongoing watch lane."],
+      ["low", "Tokenized gold has a clear underlying asset class and relatively mature market structure."],
+      ["mid", "Reserve proof, vault operator, audit cadence, and redemption minimums must be verified per issuer."],
+      ["mid", "Liquidity can fragment across XAUT, PAXG, wrappers, and venue-specific routes."],
+      ["low", "This is a useful baseline category for testing commodity-backed RWA workflows."],
     ],
   },
   {
-    id: "usdy",
-    label: "USDY",
-    chain: "Ethereum / multi-chain",
-    title: "Ondo US Dollar Yield",
-    risk: 52,
-    verdict: "Verify terms and venues",
+    id: "openai-preipo-rwa",
+    label: "OpenAI Pre-IPO RWA",
+    chain: "Private markets / tokenized SPV",
+    title: "OpenAI Pre-IPO Exposure",
+    prototypeOnly: true,
+    risk: 76,
+    verdict: "High diligence required",
     metrics: {
-      issuer: "Issuer-led updates",
-      collateral: "Yield disclosure review",
-      liquidity: "Venue depth uneven",
-      redemption: "Terms watch",
-      market: "Docs required",
-    },
-    numbers: {
-      liquidityUsd: 540000,
-      volume24h: 140000,
-      pairCount: 3,
-      priceChange24h: 0.8,
-      confidenceScore: 64,
-    },
-    confidence: {
-      score: 64,
-      label: "Medium confidence",
-      summary: "RWA asset identity is plausible, but docs and supported venues remain open checks.",
-      reasons: ["Contract, issuer page, yield disclosures, and jurisdictional availability need a canonical match."],
-    },
-    findings: [
-      ["mid", "The first pass should verify the asset contract, issuer page, supported jurisdictions, and redemption terms."],
-      ["mid", "Venue depth needs live monitoring because small withdrawals can change execution quality."],
-      ["low", "Issuer updates are researchable, but docs and attestations should drive conclusions."],
-      ["low", "No immediate critical flag in the prototype RWA profile."],
-    ],
-  },
-  {
-    id: "rwa-contract",
-    label: "0xRWA...44e",
-    chain: "Ethereum",
-    title: "RWA Contract Scan",
-    risk: 78,
-    verdict: "High-risk until issuer verified",
-    metrics: {
-      issuer: "Unverified",
-      collateral: "Unknown",
-      liquidity: "Unknown route",
-      redemption: "Unknown",
-      market: "No issuer match",
+      issuer: "SPV/broker identity",
+      collateral: "Private share claim",
+      liquidity: "Secondary-market limited",
+      redemption: "Lockup/transfer limits",
+      market: "Private AI equity",
     },
     numbers: {
       liquidityUsd: 0,
       volume24h: 0,
       pairCount: 0,
       priceChange24h: 0,
-      confidenceScore: 24,
+      confidenceScore: 38,
     },
     confidence: {
-      score: 24,
+      score: 38,
       label: "Low confidence",
-      summary: "Asset identity is not verified in the prototype profile.",
-      reasons: ["Explorer verification, issuer links, legal docs, and reserve/collateral disclosures are required."],
+      summary: "Pre-IPO exposure is highly document-driven and should not be treated as official company equity unless the legal structure is proven.",
+      reasons: ["Verify SPV ownership, transfer restrictions, investor eligibility, valuation basis, and whether the issuer has any direct company relationship."],
     },
     findings: [
-      ["high", "Contract address lacks a verified RWA issuer identity in this prototype run."],
-      ["high", "Unknown reserve, custody, and holder concentration should block any automated conclusion."],
-      ["mid", "Require explorer verification, issuer website match, docs, and pair creation history."],
-      ["mid", "Treat public source links as untrusted until linked from the issuer's canonical domain."],
+      ["high", "Private-company RWA exposure depends on SPV documents, cap-table rights, transfer limits, and custody chain."],
+      ["high", "Any product implying direct OpenAI equity should be treated as unverified until legal docs prove the claim."],
+      ["mid", "Liquidity is usually limited and may depend on off-chain settlement or private secondary-market access."],
+      ["mid", "Valuation, fees, lockups, and investor eligibility are first-order diligence items."],
+    ],
+  },
+  {
+    id: "us-equities-rwa",
+    label: "U.S. Equities RWA",
+    chain: "Tokenized brokerage / multi-chain",
+    title: "Tokenized U.S. Equities",
+    prototypeOnly: true,
+    risk: 58,
+    verdict: "Check broker and custody model",
+    metrics: {
+      issuer: "Broker/depository mapping",
+      collateral: "Share custody proof",
+      liquidity: "Session dependent",
+      redemption: "KYC and market hours",
+      market: "Equity-linked",
+    },
+    numbers: {
+      liquidityUsd: 1250000,
+      volume24h: 360000,
+      pairCount: 5,
+      priceChange24h: 1.1,
+      confidenceScore: 58,
+    },
+    confidence: {
+      score: 58,
+      label: "Medium confidence",
+      summary: "Tokenized equities can be researchable, but broker, depository, transfer-agent, and redemption models vary materially.",
+      reasons: ["Check whether the token represents direct share ownership, synthetic exposure, a broker ledger claim, or a wrapper with limited redemption."],
+    },
+    findings: [
+      ["mid", "U.S. equities RWA products require broker, custody, and corporate-action handling review."],
+      ["mid", "Market hours, KYC restrictions, jurisdictional access, and redemption paths can dominate user experience."],
+      ["mid", "Price-to-NAV drift and off-chain settlement risk should be watched during volatile sessions."],
+      ["low", "This category is a strong fit for comparison workflows across issuer models and venue design."],
     ],
   },
 ];
@@ -334,15 +337,14 @@ function cleanScanQuery(value) {
 }
 
 function scanFor(value) {
+  const sample = sampleFor(value);
+  if (sample) return sample;
+
   const query = normalizeQuery(value);
   if (!query) return state.active;
   if (query.startsWith("0x")) return samples[2];
   return (
-    samples.find((sample) => {
-      const label = sample.label.toLowerCase();
-      const title = sample.title.toLowerCase();
-      return label.includes(query) || title.includes(query) || query.includes(label);
-    }) || {
+    {
       id: query.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "scan",
       label: value.toUpperCase(),
       chain: "Unknown chain",
@@ -363,6 +365,20 @@ function scanFor(value) {
         ["low", "Add it to watch mode once the primary asset contract is verified."],
       ],
     }
+  );
+}
+
+function sampleFor(value) {
+  const query = normalizeQuery(value)
+    .replace(/^(?:dyor\s+)?\/?(?:scan|watch|redflags?)\s+/i, "")
+    .trim();
+  if (!query) return null;
+  return (
+    samples.find((sample) => {
+      const label = sample.label.toLowerCase();
+      const title = sample.title.toLowerCase();
+      return query === label || query === title || label.includes(query) || title.includes(query) || query.includes(label);
+    }) || null
   );
 }
 
@@ -389,6 +405,27 @@ async function performScan(value, options = {}) {
 
   const query = input.query;
   if (!query) return;
+
+  const localSample = sampleFor(query);
+  if (localSample?.prototypeOnly) {
+    state.active = localSample;
+    state.query = localSample.label;
+    state.loading = false;
+    state.error = "";
+    state.focus = options.focus || "";
+    state.comparison = null;
+    rememberReport(state.active);
+    if (options.addToWatch) {
+      addWatchedReport(state.active);
+    } else {
+      refreshWatchedReport(state.active);
+    }
+    if (options.replaceReportRoute) {
+      window.history.replaceState({}, "", reportPath(state.active));
+    }
+    render();
+    return;
+  }
 
   state.query = query;
   state.loading = true;
@@ -438,6 +475,25 @@ async function performScan(value, options = {}) {
 
 async function performCompare(leftQuery, rightQuery, options = {}) {
   if (state.loading) return;
+
+  const leftSample = sampleFor(leftQuery);
+  const rightSample = sampleFor(rightQuery);
+  if (leftSample?.prototypeOnly && rightSample?.prototypeOnly) {
+    state.query = `${leftSample.label} vs ${rightSample.label}`;
+    state.loading = false;
+    state.error = "";
+    state.focus = "";
+    state.comparison = compareFor(leftSample.label, rightSample.label);
+    state.active = state.comparison.left;
+    rememberComparison(state.comparison);
+    refreshWatchedReport(state.comparison.left);
+    refreshWatchedReport(state.comparison.right);
+    if (options.replaceCompareRoute && state.comparison) {
+      window.history.replaceState({}, "", comparisonPath(state.comparison));
+    }
+    render();
+    return;
+  }
 
   state.query = `${leftQuery} vs ${rightQuery}`;
   state.loading = true;
@@ -769,14 +825,14 @@ function compareFor(leftQuery, rightQuery) {
       label: `${left.label} vs ${right.label}`,
       verdict: compareVerdict(left, right),
       summary: compareSummary(left, right),
-      source: "Prototype",
+      source: "RWA category profile",
       scores: compareScores(left, right),
       left,
       right,
       deltas: compareDeltas(left, right),
       findings: [
-        ["mid", "Prototype comparison uses local sample profiles while the live compare API is unavailable."],
-        ["mid", "Run the live scan again before using any conclusion outside this shell."],
+        ["mid", "Category comparison uses local RWA sample profiles as a research scaffold."],
+        ["mid", "Use issuer docs, legal structure, custody, collateral proof, and market connectors before using any conclusion outside this shell."],
       ],
     },
     leftQuery,
@@ -1588,9 +1644,9 @@ function scanPanel() {
               `<button class="chip" type="button" data-sample="${sample.label}" ${state.loading ? "disabled" : ""}>${sample.label}</button>`,
           )
           .join("")}
-        <button class="chip chip-compare" type="button" data-sample="ONDO vs USDY" ${state.loading ? "disabled" : ""}>ONDO vs USDY</button>
-        <button class="chip chip-watch" type="button" data-sample="/watch ONDO" ${state.loading ? "disabled" : ""}>/watch ONDO</button>
-        <button class="chip chip-redflags" type="button" data-sample="/redflags ONDO" ${state.loading ? "disabled" : ""}>/redflags ONDO</button>
+        <button class="chip chip-compare" type="button" data-sample="Gold RWA vs U.S. Equities RWA" ${state.loading ? "disabled" : ""}>Gold vs Equities</button>
+        <button class="chip chip-watch" type="button" data-sample="/watch Gold RWA" ${state.loading ? "disabled" : ""}>/watch Gold RWA</button>
+        <button class="chip chip-redflags" type="button" data-sample="/redflags OpenAI Pre-IPO RWA" ${state.loading ? "disabled" : ""}>/redflags Pre-IPO</button>
       </div>
       ${state.error ? `<div class="scan-error">${escapeHtml(state.error)}</div>` : ""}
       ${
@@ -1857,7 +1913,7 @@ function comparePage(id) {
     return compareView(cachedComparison);
   }
 
-  return compareLoadingPage(id, "", "", "Missing compare query. Use a route like /c/ondo-vs-usdy?a=ONDO&b=USDY.");
+  return compareLoadingPage(id, "", "", "Missing compare query. Use a route like /c/gold-vs-equities?a=Gold%20RWA&b=U.S.%20Equities%20RWA.");
 }
 
 function loadRouteCompare(id, leftQuery, rightQuery) {
@@ -2087,10 +2143,10 @@ function docsPage() {
           <article class="flow-step"><code>/openapi.json</code><span>OpenAPI schema for tools that prefer typed endpoint definitions.</span></article>
           <article class="flow-step"><code>/llms.txt</code><span>Short LLM-readable project guide with commands and API examples.</span></article>
           <article class="flow-step"><code>/.well-known/ai-plugin.json</code><span>Plugin-style discovery manifest pointing agents to the OpenAPI schema.</span></article>
-          <article class="flow-step"><code>/api/scan?q=ONDO</code><span>Live JSON RWA research report with evidence, red flags, and watch triggers.</span></article>
-          <article class="flow-step"><code>/api/redflags?q=ONDO</code><span>Compact red flag checklist with unresolved RWA risks and action items.</span></article>
-          <article class="flow-step"><code>/api/brief?q=ONDO&format=md</code><span>Markdown RWA brief for agents, bots, docs, and notebooks.</span></article>
-          <article class="flow-step"><code>/api/watch?q=ONDO,USDY</code><span>Batch refresh watched RWA assets with per-item success or failure.</span></article>
+          <article class="flow-step"><code>/api/scan?q=Gold%20RWA</code><span>JSON RWA research report with evidence, red flags, and watch triggers.</span></article>
+          <article class="flow-step"><code>/api/redflags?q=OpenAI%20Pre-IPO%20RWA</code><span>Compact red flag checklist with unresolved RWA risks and action items.</span></article>
+          <article class="flow-step"><code>/api/brief?q=U.S.%20Equities%20RWA&format=md</code><span>Markdown RWA brief for agents, bots, docs, and notebooks.</span></article>
+          <article class="flow-step"><code>/api/watch?q=Gold%20RWA,U.S.%20Equities%20RWA</code><span>Batch refresh watched RWA assets with per-item success or failure.</span></article>
         </div>
       </div>
       <div class="doc-card">

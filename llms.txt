@@ -12,26 +12,26 @@ Status: MVP v0.1 is live on Cloudflare Pages with Pages Functions. The first liv
 - OpenAPI schema: https://dyor.sh/openapi.json
 - AI plugin manifest: https://dyor.sh/.well-known/ai-plugin.json
 - Sitemap: https://dyor.sh/sitemap.xml
-- Markdown brief example: https://dyor.sh/api/brief?q=ONDO&format=md
+- Markdown brief example: https://dyor.sh/api/brief?q=Gold%20RWA&format=md
 
 ## Commands
 
-- `/scan ONDO`: resolve an RWA asset, contract, issuer, project, Dexscreener URL, or explorer URL into a structured report.
-- `/redflags ONDO`: focus on unresolved RWA risks and what would reduce them.
-- `/watch ONDO`: scan and pin an RWA asset into the local research queue.
-- `/compare ONDO USDY`: compare two RWA assets by risk, issuer identity confidence, liquidity, volume, and market coverage.
+- `/scan Gold RWA`: resolve an RWA category, asset, contract, issuer, project, Dexscreener URL, or explorer URL into a structured report.
+- `/redflags OpenAI Pre-IPO RWA`: focus on unresolved RWA risks and what would reduce them.
+- `/watch Gold RWA`: scan and pin an RWA category or asset into the local research queue.
+- `/compare Gold RWA vs U.S. Equities RWA`: compare two RWA categories or assets by risk, issuer identity confidence, liquidity, volume, and market coverage.
 
 ## API Endpoints
 
-- `GET /api/scan?q=ONDO`: JSON RWA research report.
-- `POST /api/scan` with `{ "q": "ONDO" }`: JSON RWA research report.
-- `GET /api/redflags?q=ONDO`: compact JSON red flag checklist.
-- `GET /api/redflags?q=ONDO&format=md`: Markdown red flag checklist.
-- `GET /api/compare?a=ONDO&b=USDY`: JSON RWA comparison.
-- `GET /api/watch?q=ONDO,USDY`: batch watch refresh.
-- `POST /api/watch` with `{ "items": [{ "id": "ondo", "label": "ONDO", "query": "ONDO" }] }`: batch watch refresh.
-- `GET /api/brief?q=ONDO&format=md`: Markdown RWA research report.
-- `GET /api/brief?a=ONDO&b=USDY&format=md`: Markdown RWA comparison brief.
+- `GET /api/scan?q=Gold%20RWA`: JSON RWA research report.
+- `POST /api/scan` with `{ "q": "Gold RWA" }`: JSON RWA research report.
+- `GET /api/redflags?q=OpenAI%20Pre-IPO%20RWA`: compact JSON red flag checklist.
+- `GET /api/redflags?q=OpenAI%20Pre-IPO%20RWA&format=md`: Markdown red flag checklist.
+- `GET /api/compare?a=Gold%20RWA&b=U.S.%20Equities%20RWA`: JSON RWA comparison.
+- `GET /api/watch?q=Gold%20RWA,U.S.%20Equities%20RWA`: batch watch refresh.
+- `POST /api/watch` with `{ "items": [{ "id": "gold-rwa", "label": "Gold RWA", "query": "Gold RWA" }] }`: batch watch refresh.
+- `GET /api/brief?q=Gold%20RWA&format=md`: Markdown RWA research report.
+- `GET /api/brief?a=Gold%20RWA&b=U.S.%20Equities%20RWA&format=md`: Markdown RWA comparison brief.
 - `GET /api/capabilities`: machine-readable commands and endpoints.
 - `GET /api/manifest`: alias for `/api/capabilities`.
 

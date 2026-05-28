@@ -14,7 +14,7 @@ export async function onRequest({ request }) {
   try {
     const items = await readWatchRequest(request);
     if (!items.length) {
-      return json({ error: "Missing watch queries", message: "Use ?q=ONDO,USDY or POST { items: [{ query: 'ONDO' }] }" }, 400);
+      return json({ error: "Missing watch queries", message: "Use ?q=Gold%20RWA,U.S.%20Equities%20RWA or POST { items: [{ query: 'Gold RWA' }] }" }, 400);
     }
 
     const results = await Promise.all(items.map(refreshItem));

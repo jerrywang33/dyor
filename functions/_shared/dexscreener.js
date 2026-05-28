@@ -1,3 +1,5 @@
+import { findRwaProfile } from "./rwa-profiles.js";
+
 const DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search";
 const DEX_TOKEN_URL = "https://api.dexscreener.com/latest/dex/tokens";
 
@@ -6,6 +8,9 @@ export function cleanQuery(value) {
 }
 
 export async function scanDexscreener(query) {
+  const profile = findRwaProfile(query);
+  if (profile) return profile;
+
   const input = parseResearchInput(query);
   const pairs = await fetchPairs(input);
   const groups = rankPairGroups(

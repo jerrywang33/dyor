@@ -21,7 +21,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ONDO", "/redflags ONDO", "https://dexscreener.com/ethereum/..."]
+              "examples": ["Gold RWA", "/redflags OpenAI Pre-IPO RWA", "https://dexscreener.com/ethereum/..."]
             }
           },
           {
@@ -29,7 +29,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO"]
+              "examples": ["Gold RWA"]
             }
           }
         ],
@@ -57,7 +57,7 @@
                 "properties": {
                   "q": {
                     "type": "string",
-                    "examples": ["ONDO"]
+                    "examples": ["Gold RWA"]
                   },
                   "asset": {
                     "type": "string"
@@ -100,7 +100,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ONDO", "/redflags ONDO"]
+              "examples": ["OpenAI Pre-IPO RWA", "/redflags OpenAI Pre-IPO RWA"]
             }
           },
           {
@@ -108,7 +108,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO"]
+              "examples": ["OpenAI Pre-IPO RWA"]
             }
           },
           {
@@ -195,7 +195,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO"]
+              "examples": ["Gold RWA"]
             }
           },
           {
@@ -203,7 +203,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["USDY"]
+              "examples": ["U.S. Equities RWA"]
             }
           },
           {
@@ -211,7 +211,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO vs USDY"]
+              "examples": ["Gold RWA vs U.S. Equities RWA"]
             }
           }
         ],
@@ -274,7 +274,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "examples": ["ONDO,USDY"]
+              "examples": ["Gold RWA,U.S. Equities RWA"]
             }
           }
         ],
@@ -333,7 +333,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO", "ONDO vs USDY"]
+              "examples": ["Gold RWA", "Gold RWA vs U.S. Equities RWA"]
             }
           },
           {
@@ -341,7 +341,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "examples": ["ONDO"]
+              "examples": ["Gold RWA"]
             }
           },
           {

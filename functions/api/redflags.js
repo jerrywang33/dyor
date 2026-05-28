@@ -12,7 +12,7 @@ export async function onRequest({ request }) {
   try {
     const input = await readRedFlagRequest(request);
     if (!input.query) {
-      return json({ error: "Missing red flags query", message: "Use ?q=ONDO or POST { q: 'ONDO' }" }, 400);
+      return json({ error: "Missing red flags query", message: "Use ?q=OpenAI%20Pre-IPO%20RWA or POST { q: 'OpenAI Pre-IPO RWA' }" }, 400);
     }
 
     const report = await scanDexscreener(input.query);

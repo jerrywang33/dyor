@@ -17,6 +17,7 @@ const required = [
   "functions/_shared/capabilities.js",
   "functions/_shared/dexscreener.js",
   "functions/_shared/report-store.js",
+  "functions/_shared/rwa-profiles.js",
   "functions/api/brief.js",
   "functions/api/capabilities.js",
   "functions/api/compare.js",
