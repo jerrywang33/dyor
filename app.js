@@ -147,7 +147,7 @@ const samples = [
     id: "dtsla",
     label: "dTSLA",
     aliases: ["Dinari dShares", "Tesla dShare", "dShares"],
-    chain: "Arbitrum / Base / multi-chain",
+    chain: "Arbitrum / Base / Plume / multi-chain",
     title: "Dinari Tesla dShare",
     prototypeOnly: true,
     risk: 61,
