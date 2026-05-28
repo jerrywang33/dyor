@@ -13,7 +13,10 @@ export function buildComparison(left, right) {
     title: `${left.title} vs ${right.title}`,
     verdict: comparisonVerdict(leaderReport, left, right),
     summary: comparisonSummary(leaderReport, left, right, deltas),
-    source: "Dexscreener",
+    source:
+      left.source === right.source
+        ? left.source || "RWA research"
+        : `${left.source || "RWA research"} + ${right.source || "RWA research"}`,
     updatedAt: new Date().toISOString(),
     scores: {
       left: leftScore,
